@@ -1,7 +1,22 @@
 package eu.tsvetkov.empi.util;
 
+import java.util.function.Consumer;
+
 /**
- * Created by hpq9nx2 on 15.09.2017.
+ * @author Vadim Tsvetkov (dev@tsvetkov.eu)
  */
-public class ThrowingConsumer {
+@FunctionalInterface
+public interface ThrowingConsumer<T, E extends Exception> extends Consumer<T> {
+
+    @Override
+    default void accept(final T elem) {
+        try {
+            acceptThrows(elem);
+        } catch (final Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    void acceptThrows(T elem) throws Exception;
+
 }

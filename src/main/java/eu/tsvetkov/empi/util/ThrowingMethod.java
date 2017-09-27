@@ -1,11 +1,9 @@
 package eu.tsvetkov.empi.util;
 
-import java.util.stream.Stream;
-
 /**
-* @author Vadim Tsvetkov (dev@tsvetkov.eu)
-*/
+ * @author Vadim Tsvetkov (dev@tsvetkov.eu)
+ */
 @FunctionalInterface
 public interface ThrowingMethod<T, E extends Exception> {
-    Stream<T> run(T param) throws E;
+    T run() throws E;
 }

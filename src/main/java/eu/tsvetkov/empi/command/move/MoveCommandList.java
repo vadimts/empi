@@ -1,34 +1,25 @@
 package eu.tsvetkov.empi.command.move;
 
-import eu.tsvetkov.empi.command.Command;
+import eu.tsvetkov.empi.command.CommandList;
 import eu.tsvetkov.empi.error.CommandException;
 
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 /**
  * @author Vadim Tsvetkov (dev@tsvetkov.eu)
  */
-public abstract class MoveCommandList<T> extends Command {
+public class MoveCommandList extends CommandList<Move> {
 
-    protected List<Command> commands = new ArrayList<>();
-
-    public MoveCommandList(Command... commands) {
-        this.commands.addAll(Arrays.asList(commands));
-    }
-
-    public void add(Command command) {
-        commands.add(command);
+    public MoveCommandList(Move... commands) {
+        super(commands);
     }
 
     @Override
-    public T run(Path sourcePath) throws CommandException {
-        T path = sourcePath;
-        for (Command command : commands) {
-            command.run(path);
+    public Path run(Path sourcePath) throws CommandException {
+        Path path = sourcePath;
+        for (Move command : commands) {
+            path = command.run(path);
         }
-        return null;
+        return sourcePath;
     }
 }

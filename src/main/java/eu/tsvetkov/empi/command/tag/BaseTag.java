@@ -26,7 +26,7 @@ public abstract class BaseTag extends Command<TagMap> {
             tagMap = transformTags(tagMap);
             return (dryRun ? tagMap : tag(tagMap));
         } catch (Mp3Exception e) {
-            throw new CommandException(e);
+            throw getCommandException(e);
         }
     }
 

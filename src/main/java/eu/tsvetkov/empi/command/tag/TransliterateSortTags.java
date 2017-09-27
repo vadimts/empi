@@ -1,54 +1,59 @@
 package eu.tsvetkov.empi.command.tag;
 
 import eu.tsvetkov.empi.error.CommandException;
-import eu.tsvetkov.empi.error.CommandNotAppliedException;
-import eu.tsvetkov.empi.error.Mp3Exception;
 import eu.tsvetkov.empi.mp3.Mp3Tag;
 import eu.tsvetkov.empi.mp3.TagMap;
+import net.sf.junidecode.Junidecode;
 
-import java.io.UnsupportedEncodingException;
 import java.util.Map;
-import java.util.regex.Pattern;
 
-import static eu.tsvetkov.empi.util.Util.equal;
-import static eu.tsvetkov.empi.util.Util.join;
+import static eu.tsvetkov.empi.mp3.Mp3Tag.TAGS_SORTS;
+import static eu.tsvetkov.empi.util.Util.isBlank;
+import static java.lang.Character.UnicodeBlock;
+import static java.lang.Character.UnicodeBlock.BASIC_LATIN;
 
 /**
  * @author Vadim Tsvetkov (dev@tsvetkov.eu)
  */
-public class TransliterateSortTags extends Tag {
+public class TransliterateSortTags extends BaseTag {
 
-    public static final String RUSSIAN_WORD_IN_LATIN = "\\b[ÀÁÂÃÄÅ¨ÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞßàáâãäå¸æçèéêëìíîïðñòóôõö÷øùúûüýþÿ]+\\b";
-    public static final Pattern REGEX = Pattern.compile(RUSSIAN_WORD_IN_LATIN);
+//    public static final String RUSSIAN = "\\b[АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя]+\\b";
+//    public static final String JAPANESE = "\\b[ピンキラダブルデラックス七色のしあわせ青空にとび出せ]+\\b";
+    public static final int MIN_WORD_LENGTH = 4;
 
     @Override
-    protected void tag(TagMap tagMap) throws Mp3Exception, CommandException {
-        Map<Mp3Tag, String> oldTags = tagMap.getOldTags();
-        if(!REGEX.matcher(join(oldTags.values())).find()) {
-            throw new CommandNotAppliedException("No change in tags. " + tagMap);
-        }
-
-        for (Mp3Tag tag : oldTags.keySet()) {
-            String oldValue = oldTags.get(tag);
-            String newValue = translate(oldValue);
-            if(!equal(oldValue, newValue)) {
-                tagMap.getNewTags().put(tag, newValue);
-            }
-        }
+    protected boolean tagAffected(Mp3Tag tag, Map<Mp3Tag, String> tags) {
+        return TAGS_SORTS.containsKey(tag) && willTransliterate(tags.get(tag));
     }
 
-    protected String translate(String value) throws Mp3Exception {
-        if (value == null || !REGEX.matcher(value).find()) {
-            return value;
-        }
-        try {
-            return cleanup(new String(value.getBytes("latin1"), "cp1251"));
-        } catch (UnsupportedEncodingException e) {
-            throw new Mp3Exception("Error translating tag value '" + value + "' from latin1 to cp1251");
-        }
+    @Override
+    protected String transform(String tagValue) {
+        return Junidecode.unidecode(cleanup(tagValue));
     }
 
-    private static String cleanup(String s) {
-        return s.replaceAll("[«»]", "\"");
+    @Override
+    protected void transformTag(Mp3Tag tag, TagMap tagMap) throws CommandException {
+        tagMap.getNewTags().put(TAGS_SORTS.get(tag), transform(tagMap.getOldTags().get(tag)));
+    }
+
+    private String cleanup(String s) {
+        return s.replaceAll("е", "э")
+                .replaceAll("Е", "Э")
+                .replaceAll("ю", "ыу")
+                .replaceAll("Ю", "ЫУ")
+                .replaceAll("я", "ыа")
+                .replaceAll("Я", "ЫА");
+    }
+
+    static boolean willTransliterate(String s) {
+        if(isBlank(s)) {
+            return false;
+        }
+        char[] chars = s.toCharArray();
+        boolean latin = true;
+        for (int i = 0; i < Math.min(chars.length, MIN_WORD_LENGTH); i ++) {
+            latin &= BASIC_LATIN.equals(UnicodeBlock.of(chars[i]));
+        }
+        return !latin;
     }
 }

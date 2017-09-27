@@ -1,7 +1,11 @@
 package eu.tsvetkov.empi.error.itunes;
 
 /**
- * Created by hpq9nx2 on 11.09.2017.
+ * @author Vadim Tsvetkov (dev@tsvetkov.eu)
  */
-public class PlaylistNotFoundException {
+public class PlaylistNotFoundException extends ITunesException {
+
+    public PlaylistNotFoundException(String playlistName) {
+        super("Error getting iTunes playlist \"" + playlistName + "\"");
+    }
 }

@@ -2,8 +2,14 @@ package eu.tsvetkov.empi.mp3;
 
 import eu.tsvetkov.empi.error.Mp3Exception;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
+import static eu.tsvetkov.empi.mp3.Mp3Tag.*;
 import static eu.tsvetkov.empi.util.Util.defaultString;
 import static eu.tsvetkov.empi.util.Util.differNotBlank;
 
@@ -11,6 +17,8 @@ import static eu.tsvetkov.empi.util.Util.differNotBlank;
  * @author Vadim Tsvetkov (dev@tsvetkov.eu)
  */
 public abstract class Mp3File<T, U, V> {
+
+    public static final String FILE_SUFFIX = ".mp3";
 
     T mp3File;
     U tag1;
@@ -24,104 +32,59 @@ public abstract class Mp3File<T, U, V> {
         this.tag1 = getID3v1();
     }
 
-    public String getAlbum() {
-        return defaultString((tag2 != null ? getAlbumTag2() : null), (tag1 != null ? getAlbumTag1() : null));
+    public static boolean isMp3File(Path filePath) {
+        return (Files.isRegularFile(filePath) && filePath.toString().toLowerCase().endsWith(FILE_SUFFIX));
     }
 
-    public void setAlbum(String album) {
-        if(tag1 != null) setAlbumTag1(album);
-        if(tag2 != null) setAlbumTag2(album);
+    public Path getFilePath() {
+        return filePath;
     }
 
-    public String getAlbumArtist() {
-        return defaultString((tag2 != null ? getAlbumArtistTag2() : null), (tag1 != null ? getArtistTag1() : null));
+    public String getTag(Mp3Tag tag) {
+        return defaultString((tag2 != null ? getTag2(tag) : null), (TAGS_ID3V1.contains(tag) && tag1 != null ? getTag1(tag) : null));
     }
 
-    public void setAlbumArtist(String albumArtist) {
-        if(tag2 != null) setAlbumArtistTag2(albumArtist);
+    public boolean getTagBoolean(Mp3Tag tag) {
+        return "1".equals(getTag(tag));
     }
 
-    public String getArtist() {
-        return defaultString((tag2 != null ? getArtistTag2() : null), (tag1 != null ? getArtistTag1() : null));
+    public Map<Mp3Tag, String> getTagMap(List<Mp3Tag> tags) {
+        Map<Mp3Tag, String> map = new LinkedHashMap<>();
+        for (Mp3Tag tag : tags) {
+            map.put(tag, getTag(tag));
+        }
+        return map;
     }
 
-    public void setArtist(String artist) {
-        if(tag1 != null) setArtistTag1(artist);
-        if(tag2 != null) setArtistTag2(artist);
+    public Map<Mp3Tag, String> getTagMapAll() {
+        return getTagMap(TAGS_ALL);
     }
 
-    public abstract String getSortAlbum();
-
-    public abstract void setSortAlbum(String sortAlbum);
-
-    public abstract String getSortAlbumArtist();
-
-    public abstract void setSortAlbumArtist(String sortAlbumArtist);
-
-    public abstract String getSortArtist();
-
-    public abstract void setSortArtist(String sortArtist);
-
-    public abstract String getSortComposer();
-
-    public abstract void setSortComposer(String sortComposer);
-
-    public abstract String getSortTitle();
-
-    public abstract void setSortTitle(String sortTitle);
-
-    public String getTitle() {
-        return defaultString((tag2 != null ? getTitleTag2() : null), (tag1 != null ? getTitleTag1() : null));
+    public List<String> getTags(List<Mp3Tag> tags) {
+        return new ArrayList<>(getTagMap(tags).values());
     }
 
-    public void setTitle(String title) {
-        if(tag1 != null) setTitleTag1(title);
-        if(tag2 != null) setTitleTag2(title);
+    public List<String> getTagsAll() {
+        return getTags(TAGS_ALL);
     }
-
-    public String getTrackNumber() {
-        return defaultString((tag2 != null ? getTrackNumberTag2() : null), (tag1 != null ? getTrackNumberTag1() : null));
-    }
-
-    public void setTrackNumber(String trackNumber) {
-        if(tag1 != null) setTrackNumberTag1(trackNumber);
-        if(tag2 != null) setTrackNumberTag2(trackNumber);
-    }
-
-    public String getYear() {
-        return defaultString((tag2 != null ? getYearTag2() : null), (tag1 != null ? getYearTag1() : null));
-    }
-
-    public void setYear(String year) {
-        if(tag1 != null) setYearTag1(year);
-        if(tag2 != null) setYearTag2(year);
-    }
-
-    public abstract boolean isCompilation();
-
-    public abstract void setCompilation(boolean compilation);
 
     public abstract void save() throws Mp3Exception;
 
-    protected abstract String getAlbumArtistTag2();
+    public void setTag(Mp3Tag tag, String value) throws Mp3Exception {
+        if (tag2 != null) setTag2(tag, value);
+        if (TAGS_ID3V1.contains(tag) && tag1 != null) setTag1(tag, value);
+    }
 
-    protected abstract void setAlbumArtistTag2(String albumArtist);
+    public void setTagBoolean(Mp3Tag tag, Boolean value) throws Mp3Exception {
+        setTag(tag, (value ? "1" : ""));
+    }
 
-    protected abstract String getAlbumTag1();
-
-    protected abstract void setAlbumTag1(String album);
-
-    protected abstract String getAlbumTag2();
-
-    protected abstract void setAlbumTag2(String album);
-
-    protected abstract String getArtistTag1();
-
-    protected abstract void setArtistTag1(String artist);
-
-    protected abstract String getArtistTag2();
-
-    protected abstract void setArtistTag2(String artist);
+    public Mp3File<T, U, V> setTags(Map<Mp3Tag, String> tagValues) throws Mp3Exception {
+        for (Mp3Tag tag : tagValues.keySet()) {
+            setTag(tag, tagValues.get(tag));
+        }
+        return this;
+    }
 
     protected abstract U getID3v1();
 
@@ -129,45 +92,29 @@ public abstract class Mp3File<T, U, V> {
 
     protected abstract T getMp3File(Path filePath) throws Mp3Exception;
 
-    protected abstract String getTitleTag1();
+    protected abstract String getTag1(Mp3Tag tag);
 
-    protected abstract void setTitleTag1(String title);
+    protected abstract String getTag2(Mp3Tag tag);
 
-    protected abstract String getTitleTag2();
+    protected abstract void setTag1(Mp3Tag tag, String value) throws Mp3Exception;
 
-    protected abstract void setTitleTag2(String title);
-
-    protected abstract String getTrackNumberTag1();
-
-    protected abstract void setTrackNumberTag1(String trackNumber);
-
-    protected abstract String getTrackNumberTag2();
-
-    protected abstract void setTrackNumberTag2(String trackNumber);
-
-    protected abstract String getYearTag1();
-
-    protected abstract void setYearTag1(String year);
-
-    protected abstract String getYearTag2();
-
-    protected abstract void setYearTag2(String year);
+    protected abstract void setTag2(Mp3Tag tag, String value) throws Mp3Exception;
 
     @Override
     public String toString() {
-        String artist = getArtist();
-        String sortArtist = getSortArtist();
-        String title = getTitle();
-        String sortTitle = getSortTitle();
-        String album = getAlbum();
-        String sortAlbum = getSortAlbum();
-        String year = getYear();
+        String artist = getTag(ARTIST);
+        String sortArtist = getTag(ARTIST_SORT);
+        String title = getTag(TITLE);
+        String sortTitle = getTag(TITLE_SORT);
+        String album = getTag(ALBUM);
+        String sortAlbum = getTag(ALBUM_SORT);
+        String year = getTag(YEAR);
         return artist + (differNotBlank(artist, sortArtist) ? "/" + sortArtist : "")
             + " - " + title + (differNotBlank(title, sortTitle) ? "/" + sortTitle : "")
             + " ("
-                + album + (differNotBlank(album, sortAlbum) ? "/" + sortAlbum : "")
-                + ", " + year
-                + (isCompilation() ? ", COMP" : "")
+            + album + (differNotBlank(album, sortAlbum) ? "/" + sortAlbum : "")
+            + ", " + year
+            + (getTagBoolean(COMPILATION) ? ", COMP" : "")
             + ")"
             + ": ID3v" + (tag1 != null ? "1" : "") + (tag1 != null && tag2 != null ? "+" : "") + (tag2 != null ? "2" : "");
     }

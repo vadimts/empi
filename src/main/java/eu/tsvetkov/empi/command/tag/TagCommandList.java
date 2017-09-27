@@ -1,22 +1,38 @@
 package eu.tsvetkov.empi.command.tag;
 
-import eu.tsvetkov.empi.command.Command;
 import eu.tsvetkov.empi.command.CommandList;
 import eu.tsvetkov.empi.error.CommandException;
+import eu.tsvetkov.empi.error.Mp3Exception;
+import eu.tsvetkov.empi.mp3.TagMap;
 
 import java.nio.file.Path;
 
 /**
  * @author Vadim Tsvetkov (dev@tsvetkov.eu)
  */
-public abstract class TagCommandList extends CommandList<Path> {
+public class TagCommandList extends CommandList<BaseTag> {
+
+    public TagCommandList(BaseTag... commands) {
+        super(commands);
+    }
 
     @Override
-    public Path run(Path sourcePath) throws CommandException {
-        Path path = sourcePath;
-        for (Command<Path> command : commands) {
-            path = command.run(path);
+    public TagMap run(Path sourcePath) throws CommandException {
+        try {
+            TagMap tagMap = commands.get(0).getTagMap(sourcePath);
+            return commands.get(0).tag(transformTags(tagMap));
+        } catch (Mp3Exception e) {
+            throw getCommandException(e);
         }
-        return null;
+    }
+
+    protected TagMap transformTags(TagMap tagMap) throws CommandException {
+        TagMap oldTagMap = new TagMap(tagMap.getOldTags());
+        for (BaseTag command : commands) {
+            tagMap = command.transformTags(tagMap);
+            oldTagMap.getNewTags().putAll(tagMap.getNewTags());
+            tagMap.mergeNewTags();
+        }
+        return oldTagMap;
     }
 }

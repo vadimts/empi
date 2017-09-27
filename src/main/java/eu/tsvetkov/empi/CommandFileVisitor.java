@@ -3,18 +3,17 @@ package eu.tsvetkov.empi;
 import eu.tsvetkov.empi.command.Command;
 import eu.tsvetkov.empi.error.CommandException;
 import eu.tsvetkov.empi.error.CommandNotAppliedException;
+import eu.tsvetkov.empi.error.NotSupportedFileException;
+import eu.tsvetkov.empi.mp3.Mp3File;
+import eu.tsvetkov.empi.mp3.Mp3Tag;
+import eu.tsvetkov.empi.util.Util;
 
 import java.io.IOException;
-import java.nio.file.FileVisitResult;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.SimpleFileVisitor;
+import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
+import static eu.tsvetkov.empi.mp3.Mp3Tag.Emoji;
 import static java.nio.file.FileVisitResult.CONTINUE;
 
 /**
@@ -29,10 +28,17 @@ class CommandFileVisitor extends SimpleFileVisitor<Path> {
     private int skipped = 0;
     private int failed = 0;
     private List<Path> ignored = new ArrayList<>();
+    private List<Path> pathsToVisit = new ArrayList<>();
 
     public CommandFileVisitor(Command command) {
         this.command = command;
         ignored.addAll(IGNORE);
+    }
+
+    public void run(Path path) throws IOException {
+        pathsToVisit = new ArrayList<>();
+        Files.walkFileTree(path, this);
+        pathsToVisit.stream().sorted().forEach(this::visitPath);
     }
 
     public String getResult() {
@@ -44,20 +50,25 @@ class CommandFileVisitor extends SimpleFileVisitor<Path> {
     }
 
     @Override
+    public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+        return super.preVisitDirectory(dir, attrs);
+    }
+
+    @Override
     public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
         if(isIgnored(dir)) {
             return CONTINUE;
         }
-        visitPath(dir);
+        pathsToVisit.add(dir);
         return CONTINUE;
     }
 
     @Override
     public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-        if(isIgnored(file)) {
+        if(isIgnored(file) || !Mp3File.isMp3File(file)) {
             return CONTINUE;
         }
-        visitPath(file);
+        pathsToVisit.add(file);
         return CONTINUE;
     }
 
@@ -65,15 +76,20 @@ class CommandFileVisitor extends SimpleFileVisitor<Path> {
         return ignored.contains(path) || ignored.contains(path.getFileName());
     }
 
-    protected void visitPath(Path path) throws IOException {
-        path = path.toAbsolutePath().toRealPath();
+    protected void visitPath(Path path) {
+        if(Files.isDirectory(path)) {
+            System.out.println("\n" + Emoji.DIR + " " + path);
+        }
+
         try {
-            System.out.println(path + "\n   ⤷   " + command.run(path));
+            path = path.toAbsolutePath().toRealPath();
+            Object commandResult = command.run(path);
+            System.out.println(Util.abbrFilename(path) + "   " + commandResult);
             changed ++;
         } catch (CommandNotAppliedException e) {
-            System.out.println(path + "\n  skip: " + e);
+//            System.out.println(path + "\n  skip: " + e);
             skipped ++;
-        } catch (CommandException e) {
+        } catch (CommandException | IOException e) {
             System.out.println(path + "\n  ERROR: " + e);
             failed ++;
         }

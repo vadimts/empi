@@ -8,6 +8,7 @@ import eu.tsvetkov.empi.mp3.TagMap;
 import org.junit.Test;
 
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -19,53 +20,9 @@ import static junit.framework.Assert.assertEquals;
  */
 public class TagInfoTest extends BaseTest {
 
-    public static final Map<Mp3Tag, String> RU_IN_LATIN = new HashMap<>();
-
-    public static final String TITLE_RU_LAT = "Âèò›àæè";
-    public static final String TITLE_RU = "Витражи";
-    public static final String TITLE_RU_TRSL = "Vitrazhi";
-
-    public static final String ARTIST_RU_LAT = "Êàìå›íûé àíñàìáëü «‹îêîêî»";
-    public static final String ARTIST_RU = "Камерный ансамбль \"Рококо\"";
-    public static final String ARTIST_RU_TRSL = "Kamernyi ansambl' \"Rokoko\"";
-
-    public static final String ALBUM_EN = "Soviet Light Music vol.2";
-
-    static {
-        RU_IN_LATIN.put(TITLE, TITLE_RU_LAT);
-        RU_IN_LATIN.put(ARTIST, ARTIST_RU_LAT);
-        RU_IN_LATIN.put(ALBUM, ALBUM_EN);
-    }
-    private TagMap tagMap;
-
     @Test
-    public void latinToWinRUAndTransliterate() throws CommandException {
-        tagMap = new TagMap(RU_IN_LATIN);
-        Tag latinToRu = new TranslateLatinToWinRU() {
-            @Override
-            protected TagMap getTagMap(Path sourcePath) throws Mp3Exception {
-                return tagMap;
-            }
-        };
-        Tag transliterate = new TransliterateSortTags() {
-            @Override
-            protected TagMap getTagMap(Path sourcePath) throws Mp3Exception {
-                return tagMap;
-            }
-        };
-        TagCommandList commands = new TagCommandList(latinToRu, transliterate);
-        tagMap = commands.transformTags(tagMap);
-
-        Map<Mp3Tag, String> oldTags = tagMap.getOldTags();
-        assertEquals(3, oldTags.size());
-        assertEquals(TITLE_RU_LAT, oldTags.get(TITLE));
-        assertEquals(ARTIST_RU_LAT, oldTags.get(ARTIST));
-        assertEquals(ALBUM_EN, oldTags.get(ALBUM));
-        Map<Mp3Tag, String> newTags = tagMap.getNewTags();
-        assertEquals(4, newTags.size());
-        assertEquals(TITLE_RU, newTags.get(TITLE));
-        assertEquals(TITLE_RU_TRSL, newTags.get(TITLE_SORT));
-        assertEquals(ARTIST_RU, newTags.get(ARTIST));
-        assertEquals(ARTIST_RU_TRSL, newTags.get(ARTIST_SORT));
+    public void tagInfo() throws CommandException {
+        TagMap tagMap = new TagInfo().run(Paths.get("/Volumes/Volume_1/music/new/Mikey Dread - World War III (1980)/01 - The Jumping Master.mp3"));
+        System.out.println(tagMap);
     }
 }

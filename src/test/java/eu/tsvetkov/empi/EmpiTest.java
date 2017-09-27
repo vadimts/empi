@@ -11,6 +11,6 @@ public class EmpiTest {
 
     @Test
     public void main() throws IOException {
-        Empi.main(new String[]{"target/test-classes/mp3", "-cap", "-dry"});
+        Empi.main(new String[]{"target/test-classes/mp3/id3v2/Soviet Light Music  2", "-tLat", "-tTra", "-dry"});
     }
 }

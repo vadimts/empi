@@ -1,4 +1,6 @@
-package eu.tsvetkov.empi.error;
+package eu.tsvetkov.empi.error.itunes;
+
+import eu.tsvetkov.empi.error.CommandException;
 
 /**
  * @author Vadim Tsvetkov (dev@tsvetkov.eu)

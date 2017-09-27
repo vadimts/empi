@@ -1,8 +1,5 @@
 package eu.tsvetkov.empi.command;
 
-import eu.tsvetkov.empi.error.CommandException;
-
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -10,28 +7,27 @@ import java.util.List;
 /**
  * @author Vadim Tsvetkov (dev@tsvetkov.eu)
  */
-public class CommandList extends Command {
+public abstract class CommandList<T extends Command> extends Command {
 
-    private List<Command> commands = new ArrayList<>();
+    protected List<T> commands = new ArrayList<>();
 
-    public CommandList(Command... commands) {
+    public CommandList(T... commands) {
         this.commands.addAll(Arrays.asList(commands));
+        setAllButLastDry();
     }
 
-    public void add(Command command) {
-        if (command.equals(Flag.DRY_RUN)) {
-            setDryRun(true);
-        } else {
-            commands.add(command);
-        }
+    public void add(T lastCommand) {
+        commands.add(lastCommand);
+        setAllButLastDry();
     }
 
-    @Override
-    protected Path transformPath(Path sourcePath) throws CommandException {
-        Path path = sourcePath;
-        for (Command command : commands) {
-            path = command.transformPath(path);
+    protected void setAllButLastDry() {
+        if(commands.isEmpty()) {
+            return;
         }
-        return path;
+        for (T command : commands) {
+            command.setDryRun(true);
+        }
+        commands.get(commands.size()-1).setDryRun(dryRun);
     }
 }

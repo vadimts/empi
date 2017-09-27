@@ -1,12 +1,11 @@
 package eu.tsvetkov.empi.command.move;
 
 import eu.tsvetkov.empi.command.CommandTest;
-import eu.tsvetkov.empi.command.move.Capitalize;
 import eu.tsvetkov.empi.error.CommandException;
 import org.apache.commons.lang3.text.WordUtils;
 import org.junit.Test;
 
-import static eu.tsvetkov.empi.command.move.Rename.SEP;
+import static eu.tsvetkov.empi.util.Util.SEP;
 import static eu.tsvetkov.empi.command.move.Rename.SEP_ARTIST_ALBUM;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.junit.Assert.assertEquals;

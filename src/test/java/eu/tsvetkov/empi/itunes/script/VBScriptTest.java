@@ -1,7 +1,24 @@
 package eu.tsvetkov.empi.itunes.script;
 
 /**
- * Created by hpq9nx2 on 11.09.2017.
+ * @author Vadim Tsvetkov (dev@tsvetkov.eu)
  */
-public class VBScriptTest {
+public class VBScriptTest extends BaseScriptTest<VBScript> {
+
+    protected String getPlaylistCountScript() {
+        return script.echo("iTunes.LibrarySource.Playlists.Count");
+    }
+
+    @Override
+    String getTracksCountScript() {
+        return script.echo("iTunes.LibraryPlaylist.Tracks.Count");
+    }
+
+    @Override
+    protected ITunesScript getLastTrackTags(String playlistName) {
+        return new VBScript("set tracks = " + script.playlistByName(playlistName) + ".Tracks",
+                "set lastTrack = tracks.Item(tracks.Count)",
+                script.echo("lastTrack.name & \",\" & lastTrack.artist & \",\" & lastTrack.album"));
+    }
+
 }

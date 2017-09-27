@@ -1,6 +1,7 @@
 package eu.tsvetkov.empi.command;
 
 import eu.tsvetkov.empi.BaseTest;
+import eu.tsvetkov.empi.command.move.Rename;
 import eu.tsvetkov.empi.error.CommandException;
 import org.junit.After;
 
@@ -12,7 +13,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.*;
 
-import static eu.tsvetkov.empi.command.Rename.SEP;
+import static eu.tsvetkov.empi.util.Util.SEP;
 import static junit.framework.Assert.assertTrue;
 
 /**
@@ -72,6 +73,6 @@ public class CommandTest<C extends Command> extends BaseTest {
     protected void runCommand(C command, Path path) throws CommandException {
         assertTrue("Test file doesn't exist", Files.exists(path));
         sourcePath = path;
-        targetPath = command.run(path);
+//        targetPath = command.run(path);
     }
 }

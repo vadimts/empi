@@ -1,7 +1,6 @@
 package eu.tsvetkov.empi.command.move;
 
 import eu.tsvetkov.empi.BaseTest;
-import eu.tsvetkov.empi.command.Command;
 import eu.tsvetkov.empi.error.CommandException;
 import org.junit.After;
 
@@ -11,15 +10,18 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-import static eu.tsvetkov.empi.command.move.Rename.SEP;
+import static eu.tsvetkov.empi.util.Util.SEP;
 import static junit.framework.Assert.assertTrue;
 
 /**
  * @author Vadim Tsvetkov (dev@tsvetkov.eu)
  */
-public class MoveCommandTest<C extends Command> extends BaseTest {
+public class MoveCommandTest<C extends Move> extends BaseTest {
 
     public static final String YEAR = "[2009]";
     public static final String SUFFIX = "-WEB";

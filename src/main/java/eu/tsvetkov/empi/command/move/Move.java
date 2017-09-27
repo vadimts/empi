@@ -11,7 +11,7 @@ import java.nio.file.StandardCopyOption;
 /**
  * @author Vadim Tsvetkov (dev@tsvetkov.eu)
  */
-public abstract class Move extends Command {
+public abstract class Move extends Command<Path> {
 
     public final Path run(Path sourcePath) throws CommandException {
         Path targetPath = transformPath(sourcePath);

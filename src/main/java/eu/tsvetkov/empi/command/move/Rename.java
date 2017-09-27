@@ -2,6 +2,7 @@ package eu.tsvetkov.empi.command.move;
 
 import eu.tsvetkov.empi.error.CommandException;
 import eu.tsvetkov.empi.error.CommandNotAppliedException;
+import eu.tsvetkov.empi.util.Util;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -14,8 +15,7 @@ import java.nio.file.Paths;
 public abstract class Rename extends Move {
 
     public static final String PSEP = File.separator;
-    public static final String SEP = " ";
-    public static final String SEP_ARTIST_ALBUM = SEP + "-" + SEP;
+    public static final String SEP_ARTIST_ALBUM = Util.SEP + "-" + Util.SEP;
 
     protected Path sourcePath;
 

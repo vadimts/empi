@@ -3,22 +3,21 @@ package eu.tsvetkov.empi.itunes.script;
 /**
  * @author Vadim Tsvetkov (dev@tsvetkov.eu)
  */
-public class VBScriptTest extends BaseScriptTest<VBScript> {
+public class AppleScriptTest extends BaseScriptTest<AppleScript> {
 
     protected String getPlaylistCountScript() {
-        return script.echo("iTunes.LibrarySource.Playlists.Count");
+        return script.echo("count of user playlists");
     }
 
     @Override
     String getTracksCountScript() {
-        return script.echo("iTunes.LibraryPlaylist.Tracks.Count");
+        return script.echo("count of library's tracks");
     }
 
     @Override
     protected ITunesScript getLastTrackTags(String playlistName) {
-        return new VBScript("set tracks = " + script.playlistByName(playlistName) + ".Tracks",
-                "set lastTrack = tracks.Item(tracks.Count)",
-                script.echo("lastTrack.name & \",\" & lastTrack.artist & \",\" & lastTrack.album"));
+        return new AppleScript("set lastTrack to last track of library",
+            script.echo("lastTrack.name & \",\" & lastTrack.artist & \",\" & lastTrack.album"));
     }
 
 }

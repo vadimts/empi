@@ -1,11 +1,10 @@
 package eu.tsvetkov.empi.command.move;
 
 import eu.tsvetkov.empi.command.CommandTest;
-import eu.tsvetkov.empi.command.move.MoveUp;
 import org.junit.Test;
 
 import static eu.tsvetkov.empi.command.move.Rename.PSEP;
-import static eu.tsvetkov.empi.command.move.Rename.SEP;
+import static eu.tsvetkov.empi.util.Util.SEP;
 
 /**
  * @author Vadim Tsvetkov (dev@tsvetkov.eu)

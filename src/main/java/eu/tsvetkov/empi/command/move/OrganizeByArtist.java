@@ -2,8 +2,7 @@ package eu.tsvetkov.empi.command.move;
 
 import eu.tsvetkov.empi.error.CommandException;
 import eu.tsvetkov.empi.mp3.JTag;
-import eu.tsvetkov.empi.mp3.Mp3Info;
-import net.sf.junidecode.Junidecode;
+import eu.tsvetkov.empi.mp3.Mp3File;
 
 import java.nio.file.Path;
 
@@ -18,18 +17,7 @@ public class OrganizeByArtist extends Move {
     @Override
     protected Path transformPath(Path sourcePath) throws CommandException {
         try {
-            Mp3Info f = new JTag(sourcePath);
-            String artist = f.getTitle();
-            System.out.println(artist);
-            if(artist.matches(".*\\b[ÀÁÂÃÄÅ¨ÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞßàáâãäå¸æçèéêëìíîïðñòóôõö÷øùúûüýþÿ]+\\b.*")) {
-                String artistFixed = new String(artist.getBytes("latin1"), "cp1251").replaceAll("[«»]", "\"");
-                System.out.println(artistFixed);
-                String artistTransl = Junidecode.unidecode(artistFixed);
-                System.out.println(artistTransl);
-                f.setArtist(artistFixed);
-                f.setSortArtist(artistTransl);
-//                f.save();
-            }
+            Mp3File f = new JTag(sourcePath);
         } catch (Exception e) {
         }
         return null;

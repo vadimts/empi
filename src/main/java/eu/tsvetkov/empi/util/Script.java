@@ -1,22 +1,19 @@
 package eu.tsvetkov.empi.util;
 
-import eu.tsvetkov.empi.error.ITunesException;
+import eu.tsvetkov.empi.error.itunes.ITunesException;
 import eu.tsvetkov.empi.itunes.script.AppleScript;
-import eu.tsvetkov.empi.itunes.script.BaseScript;
+import eu.tsvetkov.empi.itunes.script.ITunesScript;
+import eu.tsvetkov.empi.itunes.script.ScriptException;
+import eu.tsvetkov.empi.itunes.script.VBScript;
+import eu.tsvetkov.empi.util.ITunes.Track;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Collection;
 import java.util.List;
-import java.util.stream.IntStream;
 
-import static eu.tsvetkov.empi.itunes.script.BaseScript.ERROR_PREFIX;
-import static java.util.Arrays.asList;
-import static java.util.stream.Collectors.joining;
-import static java.util.stream.Collectors.partitioningBy;
-import static java.util.stream.Collectors.toList;
+import static eu.tsvetkov.empi.util.Script.OperatingSystem.MAC;
+import static eu.tsvetkov.empi.util.Script.OperatingSystem.WIN;
 
 /**
  * @author Vadim Tsvetkov (dev@tsvetkov.eu)
@@ -24,6 +21,43 @@ import static java.util.stream.Collectors.toList;
 public class Script {
 
     private static final Logger log = LogManager.getLogger(Script.class);
+
+    public static ITunesScript SCRIPT = getScript();
+    static OperatingSystem os;
+
+    enum OperatingSystem {
+        MAC, WIN
+    }
+
+    public static ITunesScript getScript() {
+        switch(getOs()) {
+            case WIN:
+                return new VBScript();
+            default:
+                return new AppleScript();
+        }
+    }
+
+    static OperatingSystem getOs(String osName) {
+        if(os == null) {
+            if(osName != null && osName.toLowerCase().contains("windows")) {
+                os = WIN;
+            }
+            else {
+                os = MAC;
+            }
+        }
+        return os;
+    }
+
+    static String getOsName() {
+        return System.getProperty("os.name");
+    }
+
+    public static OperatingSystem getOs() {
+        return getOs(getOsName());
+    }
+
 
 //    public static List<String> addTrackPaths(List<Path> tracks, String playlist) throws ITunesException {
 //        String files = tracks.parallelStream().map(Path::toString).collect(joining("\", POSIX file \""));
@@ -38,19 +72,32 @@ public class Script {
 //        return execLine("delete first track of playlist \"" + playlist + "\" whose database ID = " + trackId);
 //    }
 
-    public static String deleteTrackFromLibrary(String trackId) throws ITunesException {
-        return BaseScript.ITEM.exec("delete first track of playlist 1 whose database ID = " + trackId);
+    public static Track addTrack(String trackLocation, String playlist) throws ITunesException {
+        return SCRIPT.addTrack(trackLocation, playlist);
+    }
+
+    public static void deletePlaylist(String playlistName) throws ITunesException {
+        SCRIPT.deletePlaylist(playlistName);
+    }
+
+    public static void deleteTrackFromLibrary(int trackId) throws ITunesException {
+        SCRIPT.deleteTrackFromLibrary(trackId);
+    }
+
+    public static String exec(Object... commands) throws ScriptException {
+        return SCRIPT.exec(commands);
     }
 
     public static String getOrCreatePlaylist(String playlist) throws ITunesException {
-        return BaseScript.ITEM.exec(BaseScript.ITEM.tryCatch(
-                "get playlist \"" + playlist + "\"",
-                "make new user playlist with properties {name:\"" + playlist + "\"}"
-        ));
+        return SCRIPT.getOrCreatePlaylist(playlist);
     }
 
     public static String getPlaylist(String playlist) throws ITunesException {
-        return BaseScript.ITEM.exec(BaseScript.ITEM.tryCatch("get playlist \"" + playlist + "\""));
+        return SCRIPT.getPlaylist(playlist);
+    }
+
+    public static List<Track> getPlaylistTracks(String playlistName) throws ITunesException {
+        return SCRIPT.getPlaylistTracks(playlistName);
     }
 
 //        public static List<Track> getPlaylistTracks(String playlistName) {
