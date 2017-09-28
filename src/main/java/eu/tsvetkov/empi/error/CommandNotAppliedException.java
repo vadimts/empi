@@ -7,4 +7,8 @@ public class CommandNotAppliedException extends CommandException {
     public CommandNotAppliedException(String message) {
         super(message);
     }
+
+    public CommandNotAppliedException(Throwable cause) {
+        super(cause);
+    }
 }

@@ -1,25 +1,54 @@
 package eu.tsvetkov.empi.mp3;
 
 import eu.tsvetkov.empi.error.Mp3Exception;
+import eu.tsvetkov.empi.error.NotSupportedFileException;
 import org.jaudiotagger.audio.AudioFileIO;
 import org.jaudiotagger.audio.exceptions.CannotWriteException;
 import org.jaudiotagger.audio.mp3.MP3File;
 import org.jaudiotagger.tag.FieldDataInvalidException;
 import org.jaudiotagger.tag.FieldKey;
+import org.jaudiotagger.tag.KeyNotFoundException;
 import org.jaudiotagger.tag.id3.AbstractID3v2Tag;
 import org.jaudiotagger.tag.id3.ID3v1Tag;
 
 import java.nio.file.Path;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.LogManager;
+
+import static eu.tsvetkov.empi.mp3.Mp3Tag.*;
 
 /**
  * @author Vadim Tsvetkov (dev@tsvetkov.eu)
  */
-public class JTag extends Mp3Info<MP3File,ID3v1Tag,AbstractID3v2Tag> {
+public class JTag extends Mp3File<MP3File, ID3v1Tag, AbstractID3v2Tag> {
+
+    private static final Map<Mp3Tag, FieldKey> FIELD_KEYS = new HashMap<>();
 
     static {
         // Disable default console logging.
         LogManager.getLogManager().reset();
+
+        FIELD_KEYS.put(TITLE, FieldKey.TITLE);
+        FIELD_KEYS.put(TITLE_SORT, FieldKey.TITLE_SORT);
+        FIELD_KEYS.put(ARTIST, FieldKey.ARTIST);
+        FIELD_KEYS.put(ARTIST_SORT, FieldKey.ARTIST_SORT);
+        FIELD_KEYS.put(ALBUM, FieldKey.ALBUM);
+        FIELD_KEYS.put(ALBUM_SORT, FieldKey.ALBUM_SORT);
+        FIELD_KEYS.put(ALBUM_ARTIST, FieldKey.ALBUM_ARTIST);
+        FIELD_KEYS.put(ALBUM_ARTIST_SORT, FieldKey.ALBUM_ARTIST_SORT);
+        FIELD_KEYS.put(COMPOSER, FieldKey.COMPOSER);
+        FIELD_KEYS.put(COMPOSER_SORT, FieldKey.COMPOSER_SORT);
+        FIELD_KEYS.put(GROUPING, FieldKey.GROUPING);
+        FIELD_KEYS.put(GENRE, FieldKey.GENRE);
+        FIELD_KEYS.put(YEAR, FieldKey.YEAR);
+        FIELD_KEYS.put(TRACK_NO, FieldKey.TRACK);
+        FIELD_KEYS.put(TRACK_TOTAL, FieldKey.TRACK_TOTAL);
+        FIELD_KEYS.put(DISC_NO, FieldKey.DISC_NO);
+        FIELD_KEYS.put(DISC_TOTAL, FieldKey.DISC_TOTAL);
+        FIELD_KEYS.put(COMPILATION, FieldKey.IS_COMPILATION);
+        FIELD_KEYS.put(RATING, FieldKey.RATING);
+        FIELD_KEYS.put(COMMENT, FieldKey.COMMENT);
     }
 
     public JTag(Path filePath) throws Mp3Exception {
@@ -27,86 +56,18 @@ public class JTag extends Mp3Info<MP3File,ID3v1Tag,AbstractID3v2Tag> {
     }
 
     @Override
-    public String getSortAlbum() {
-        return tag2.getFirst(FieldKey.ALBUM_SORT);
+    public String getTag1(Mp3Tag tag) {
+        return tag1.getFirst(FIELD_KEYS.get(tag));
     }
 
     @Override
-    public void setSortAlbum(String sortAlbum) {
+    public String getTag2(Mp3Tag tag) {
         try {
-            tag2.setField(FieldKey.ALBUM_SORT, sortAlbum);
-        } catch (FieldDataInvalidException e) {
-            System.out.println("Error setting tag field: " + e);
-        }
-    }
-
-    @Override
-    public String getSortAlbumArtist() {
-        return tag2.getFirst(FieldKey.ALBUM_ARTIST_SORT);
-    }
-
-    @Override
-    public void setSortAlbumArtist(String sortAlbumArtist) {
-        try {
-            tag2.setField(FieldKey.ALBUM_ARTIST_SORT, sortAlbumArtist);
-        } catch (FieldDataInvalidException e) {
-            System.out.println("Error setting tag field: " + e);
-        }
-    }
-
-    @Override
-    public String getSortArtist() {
-        return tag2.getFirst(FieldKey.ARTIST_SORT);
-    }
-
-    @Override
-    public void setSortArtist(String sortArtist) {
-        try {
-            tag2.setField(FieldKey.ARTIST_SORT, sortArtist);
-        } catch (FieldDataInvalidException e) {
-            System.out.println("Error setting tag field: " + e);
-        }
-    }
-
-    @Override
-    public String getSortComposer() {
-        return tag2.getFirst(FieldKey.COMPOSER_SORT);
-    }
-
-    @Override
-    public void setSortComposer(String sortComposer) {
-        try {
-            tag2.setField(FieldKey.COMPOSER_SORT, sortComposer);
-        } catch (FieldDataInvalidException e) {
-            System.out.println("Error setting tag field: " + e);
-        }
-    }
-
-    @Override
-    public String getSortTitle() {
-        return tag2.getFirst(FieldKey.TITLE_SORT);
-    }
-
-    @Override
-    public void setSortTitle(String sortTitle) {
-        try {
-            tag2.setField(FieldKey.TITLE_SORT, sortTitle);
-        } catch (FieldDataInvalidException e) {
-            System.out.println("Error setting tag field: " + e);
-        }
-    }
-
-    @Override
-    public boolean isCompilation() {
-        return "1".equals(tag2.getFirst(FieldKey.IS_COMPILATION));
-    }
-
-    @Override
-    public void setCompilation(boolean compilation) {
-        try {
-            tag2.setField(FieldKey.IS_COMPILATION, (compilation ? "1" : ""));
-        } catch (FieldDataInvalidException e) {
-            System.out.println("Error setting tag field: " + e);
+            return tag2.getFirst(FIELD_KEYS.get(tag));
+        } catch (Exception e) {
+            System.out.println("Error getting tag " + tag);
+            e.printStackTrace();
+            throw e;
         }
     }
 
@@ -120,72 +81,20 @@ public class JTag extends Mp3Info<MP3File,ID3v1Tag,AbstractID3v2Tag> {
     }
 
     @Override
-    protected String getAlbumArtistTag2() {
-        return tag2.getFirst(FieldKey.ALBUM_ARTIST);
-    }
-
-    @Override
-    protected void setAlbumArtistTag2(String albumArtist) {
+    public void setTag1(Mp3Tag tag, String value) throws Mp3Exception {
         try {
-            tag2.setField(FieldKey.ALBUM_ARTIST, albumArtist);
+            tag1.setField(FIELD_KEYS.get(tag), value);
         } catch (FieldDataInvalidException e) {
-            System.out.println("Error setting tag field: " + e);
+            throw new Mp3Exception("Error setting Id3v1 tag " + tag + " = '" + value + "'", e);
         }
     }
 
     @Override
-    protected String getAlbumTag1() {
-        return tag1.getFirst(FieldKey.ALBUM);
-    }
-
-    @Override
-    protected void setAlbumTag1(String album) {
+    public void setTag2(Mp3Tag tag, String value) throws Mp3Exception {
         try {
-            tag1.setField(FieldKey.ALBUM, album);
+            tag2.setField(FIELD_KEYS.get(tag), value);
         } catch (FieldDataInvalidException e) {
-            System.out.println("Error setting tag field: " + e);
-        }
-    }
-
-    @Override
-    protected String getAlbumTag2() {
-        return tag2.getFirst(FieldKey.ALBUM);
-    }
-
-    @Override
-    protected void setAlbumTag2(String album) {
-        try {
-            tag2.setField(FieldKey.ALBUM, album);
-        } catch (FieldDataInvalidException e) {
-            System.out.println("Error setting tag field: " + e);
-        }
-    }
-
-    @Override
-    protected String getArtistTag1() {
-        return tag1.getFirst(FieldKey.ARTIST);
-    }
-
-    @Override
-    protected void setArtistTag1(String artist) {
-        try {
-            tag1.setField(FieldKey.ARTIST, artist);
-        } catch (FieldDataInvalidException e) {
-            System.out.println("Error setting tag field: " + e);
-        }
-    }
-
-    @Override
-    protected String getArtistTag2() {
-        return tag2.getFirst(FieldKey.ARTIST);
-    }
-
-    @Override
-    protected void setArtistTag2(String artist) {
-        try {
-            tag2.setField(FieldKey.ARTIST, artist);
-        } catch (FieldDataInvalidException e) {
-            System.out.println("Error setting tag field: " + e);
+            throw new Mp3Exception("Error setting Id3v2 tag " + tag + " = '" + value + "'", e);
         }
     }
 
@@ -201,94 +110,14 @@ public class JTag extends Mp3Info<MP3File,ID3v1Tag,AbstractID3v2Tag> {
 
     @Override
     protected MP3File getMp3File(Path filePath) throws Mp3Exception {
+        if(!isMp3File(filePath)) {
+            throw new NotSupportedFileException("No MP3 file on path '" + filePath + "'");
+        }
+
         try {
             return (MP3File) AudioFileIO.read(filePath.toFile());
         } catch (Exception e) {
             throw new Mp3Exception("Could not read MP3 file from path '" + filePath + "'", e);
-        }
-    }
-
-    @Override
-    protected String getTitleTag1() {
-        return tag1.getFirst(FieldKey.TITLE);
-    }
-
-    @Override
-    protected void setTitleTag1(String title) {
-        try {
-            tag1.setField(FieldKey.TITLE, title);
-        } catch (FieldDataInvalidException e) {
-            System.out.println("Error setting tag field: " + e);
-        }
-    }
-
-    @Override
-    protected String getTitleTag2() {
-        return tag2.getFirst(FieldKey.TITLE);
-    }
-
-    @Override
-    protected void setTitleTag2(String title) {
-        try {
-            tag2.setField(FieldKey.TITLE, title);
-        } catch (FieldDataInvalidException e) {
-            System.out.println("Error setting tag field: " + e);
-        }
-    }
-
-    @Override
-    protected String getTrackNumberTag1() {
-        return tag1.getFirst(FieldKey.TRACK);
-    }
-
-    @Override
-    protected void setTrackNumberTag1(String trackNumber) {
-        try {
-            tag1.setField(FieldKey.TRACK, trackNumber);
-        } catch (FieldDataInvalidException e) {
-            System.out.println("Error setting tag field: " + e);
-        }
-    }
-
-    @Override
-    protected String getTrackNumberTag2() {
-        return tag2.getFirst(FieldKey.TITLE);
-    }
-
-    @Override
-    protected void setTrackNumberTag2(String trackNumber) {
-        try {
-            tag2.setField(FieldKey.TRACK, trackNumber);
-        } catch (FieldDataInvalidException e) {
-            System.out.println("Error setting tag field: " + e);
-        }
-    }
-
-    @Override
-    protected String getYearTag1() {
-        return tag1.getFirst(FieldKey.YEAR);
-    }
-
-    @Override
-    protected void setYearTag1(String year) {
-        try {
-            tag1.setField(FieldKey.YEAR, year);
-        } catch (FieldDataInvalidException e) {
-            System.out.println("Error setting tag field: " + e);
-        }
-    }
-
-    @Override
-    protected String getYearTag2() {
-        return tag2.getFirst(FieldKey.YEAR);
-    }
-
-    @Override
-    protected void setYearTag2(String year) {
-        try {
-            tag2.setField(FieldKey.YEAR, year);
-        } catch (FieldDataInvalidException e) {
-            System.out.println("Error setting tag field: " + e);
         }
     }
 }
