@@ -3,15 +3,15 @@ package eu.tsvetkov.empi.command.itunes;
 import eu.tsvetkov.empi.error.CommandException;
 import eu.tsvetkov.empi.itunes.script.BaseScript;
 import eu.tsvetkov.empi.util.ITunes;
-import eu.tsvetkov.empi.util.ITunes.Track;
+import eu.tsvetkov.empi.util.Track;
 import eu.tsvetkov.empi.util.Script;
+import eu.tsvetkov.empi.util.Track.NewTrack;
 import eu.tsvetkov.empi.util.Util;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -27,9 +27,7 @@ public class SyncPlaylist {
     private static ITunes iTunes;
     private boolean useSystemLibrary;
     private String libraryXmlPath;
-    private Result success;
-    private Result error;
-    private Result analysis;
+    private PlaylistSync sync;
 
     public SyncPlaylist() {
     }
@@ -38,9 +36,9 @@ public class SyncPlaylist {
         this.libraryXmlPath = libraryXmlPath;
     }
 
-    public Result analyse(String directory, String playlistName) throws CommandException {
+    public PlaylistSync analyse(String directory, String playlistName) throws CommandException {
         try {
-            analysis = new Result();
+            sync = new PlaylistSync(playlistName);
 
             List<String> files = Util.File.getMp3InDirectory(directory).collect(toList());
             List<Track> tracks = Script.getPlaylistTracks(playlistName);
@@ -50,15 +48,15 @@ public class SyncPlaylist {
             Map<Boolean, List<Track>> existingAndOutsideTracks = missingAndExistingTracks.get(Boolean.TRUE).parallelStream()
                 .collect(partitioningBy(x -> files.contains(x.getPath())));
 
-            analysis.existingTracks = existingAndOutsideTracks.get(Boolean.TRUE);
-            analysis.outsideTracks = existingAndOutsideTracks.get(Boolean.FALSE);
-            analysis.missingTracks = missingAndExistingTracks.get(Boolean.FALSE);
+            sync.unmodifiedTracks.before = existingAndOutsideTracks.get(Boolean.TRUE);
+            sync.misplacedTracks.before = existingAndOutsideTracks.get(Boolean.FALSE);
+            sync.missingTracks.before = missingAndExistingTracks.get(Boolean.FALSE);
             if(useSystemLibrary) {
-                analysis.missingTracks.forEach(x -> checkLocationWithLibrary(x, playlistName));
+                sync.missingTracks.before.forEach(x -> checkLocationWithLibrary(x, playlistName));
             }
-            analysis.newTrackPaths = files.parallelStream().filter(x -> !trackLocations.contains(x)).collect(toList());
+            sync.newTracks.before = files.parallelStream().filter(x -> !trackLocations.contains(x)).map(NewTrack::new).collect(toList());
 
-            return analysis;
+            return sync;
         } catch (Exception e) {
             throw new CommandException("Error analysing directory '" + directory + "' and playlist '" + playlistName + "'", e);
         }
@@ -69,33 +67,30 @@ public class SyncPlaylist {
     }
 
     public void sync(String directory, String playlistName) throws CommandException {
-        success = new Result();
-        error = new Result();
-        if(analysis == null) {
-            analysis = analyse(directory, playlistName);
+        if(sync == null) {
+            sync = analyse(directory, playlistName);
         }
-        for(Track track : analysis.getMissingTracks()) {
+        for(Track track : sync.newTracks.before) {
             try {
-                Script.deleteTrackFromLibrary(track.getId());
-                success.getMissingTracks().add(track);
+                sync.newTracks.success.add(Script.addTrack(track.getPath(), playlistName));
             } catch (Exception e) {
-                error.getMissingTracks().add(track);
+                sync.newTracks.error.add(track);
             }
         }
-        for(Track track : analysis.getOutsideTracks()) {
+        for(Track track : sync.missingTracks.before) {
             try {
                 Script.deleteTrackFromLibrary(track.getId());
-                success.getOutsideTracks().add(track);
+                sync.missingTracks.success.add(track);
             } catch (Exception e) {
-                error.getOutsideTracks().add(track);
+                sync.missingTracks.error.add(track);
             }
         }
-        for(String trackPath : analysis.getNewTrackPaths()) {
+        for(Track track : sync.misplacedTracks.before) {
             try {
-                Track track = Script.addTrack(trackPath, playlistName);
-                success.getNewTracks().add(track);
+                Script.deleteTrackFromLibrary(track.getId());
+                sync.misplacedTracks.success.add(track);
             } catch (Exception e) {
-                error.getNewTrackPaths().add(trackPath);
+                sync.misplacedTracks.error.add(track);
             }
         }
     }
@@ -104,16 +99,8 @@ public class SyncPlaylist {
         sync(directory, directory.substring(directory.lastIndexOf("/") + 1));
     }
 
-    public Result getAnalysis() {
-        return analysis;
-    }
-
-    public Result getSuccess() {
-        return success;
-    }
-
-    public Result getError() {
-        return error;
+    public PlaylistSync getSync() {
+        return sync;
     }
 
     protected void checkLocationWithLibrary(Track track, String playlistName) {
@@ -123,7 +110,7 @@ public class SyncPlaylist {
                 if (libTrack != null) {
                     track.setPath(libTrack.getPath());
                 } else {
-                    log.error("Location of track " + track.getId() + " not found in iTunes XML library.");
+                    log.warn("Location of track " + track.getId() + " not found in iTunes XML library.");
                 }
             } catch (CommandException e) {
                 log.error("Error getting location of track " + track.getId(), e);
@@ -136,35 +123,6 @@ public class SyncPlaylist {
             iTunes = new ITunes(libraryXmlPath);
         }
         return iTunes;
-    }
-
-    public class Result {
-
-        List<Track> existingTracks = new ArrayList<>();
-        List<Track> outsideTracks = new ArrayList<>();
-        List<Track> missingTracks = new ArrayList<>();
-        List<String> newTrackPaths = new ArrayList<>();
-        List<Track> newTracks = new ArrayList<>();
-
-        public List<Track> getExistingTracks() {
-            return existingTracks;
-        }
-
-        public List<Track> getMissingTracks() {
-            return missingTracks;
-        }
-
-        public List<String> getNewTrackPaths() {
-            return newTrackPaths;
-        }
-
-        public List<Track> getNewTracks() {
-            return newTracks;
-        }
-
-        public List<Track> getOutsideTracks() {
-            return outsideTracks;
-        }
     }
 
 }

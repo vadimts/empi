@@ -4,8 +4,6 @@ import com.ximpleware.*;
 import eu.tsvetkov.empi.error.CommandException;
 import eu.tsvetkov.empi.error.FileException;
 import eu.tsvetkov.empi.error.XmlException;
-import eu.tsvetkov.empi.error.itunes.ITunesException;
-import eu.tsvetkov.empi.itunes.script.BaseScript;
 import eu.tsvetkov.empi.mp3.Mp3Tag;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -17,8 +15,6 @@ import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.IntStream;
 
-import static eu.tsvetkov.empi.util.Util.isBlank;
-import static eu.tsvetkov.empi.util.Util.isEmpty;
 import static java.text.MessageFormat.format;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
@@ -34,13 +30,14 @@ public class ITunes {
     private Map<String, List<Track>> playlistTracks = new HashMap<>();
     private VTDNav nav;
     private String libPath;
+    private boolean xmlLibraryAvailable = true;
 
     public ITunes(String libPath) throws CommandException {
         this.libPath = libPath;
     }
 
     public Track getTrackByIdFromXml(String playlistName, int trackId) throws CommandException {
-        return getTrackById(getPlaylistTracksFromXml(playlistName), trackId);
+        return (xmlLibraryAvailable ? getTrackById(getPlaylistTracksFromXml(playlistName), trackId) : null);
     }
 
     static String cleanLocation(String value) {
@@ -80,12 +77,15 @@ public class ITunes {
     }
 
     private VTDNav getNav() throws CommandException {
+        log.debug("Reading iTunes library from '" + libPath + "'");
         VTDGen vtd = new VTDGen();
         try {
             vtd.setDoc(Files.readAllBytes(Paths.get(libPath)));
             vtd.parse(false);
+            log.debug("Successfully read iTunes library");
             return vtd.getNav();
         } catch (IOException e) {
+            xmlLibraryAvailable = false;
             throw new FileException("Error reading iTunes library file '" + libPath + "'", e);
         } catch (ParseException e) {
             throw new XmlException("Error parsing XML in iTunes library file '" + libPath + "'", e);
@@ -157,7 +157,9 @@ public class ITunes {
     }
 
     private List<Track> readPlaylistTracksFromXml(String playlistName) throws CommandException {
-        readXmlLibrary();
+        if(nav == null) {
+            nav = getNav();
+        }
         // Get track IDs in the provided playlist.
         String playlistDict = "dict[key" + txt("Name") + "/" + sibl("string") + txt(playlistName) + "]";
         String xpathTrackIds = xpath("/plist", "dict", key("Playlists"), sibl("array"), playlistDict, key("Playlist Items"), sibl("array"),
@@ -176,12 +178,6 @@ public class ITunes {
         log.debug("Found " + tracks.size() + " tracks");
 
         return tracks;
-    }
-
-    private void readXmlLibrary() throws CommandException {
-        log.debug("Reading iTunes library from '" + libPath + "'");
-        nav = getNav();
-        log.debug("Successfully read iTunes library");
     }
 
     private void selectXPath(AutoPilot p, String xpath) throws XmlException {
@@ -230,46 +226,4 @@ public class ITunes {
         }
     }
 
-    public static class Track {
-
-        public static final String ERROR_LOCATION = BaseScript.ERROR_PREFIX + "track location not found";
-
-        private int id;
-        private String path;
-
-        public Track(int id, String path) {
-            this.id = id;
-            this.path = path;
-        }
-
-        public Track(String... attributes) throws ITunesException {
-            if(attributes == null || isEmpty(attributes)) {
-                throw new ITunesException("Error creating iTunes track from attributes: " + attributes);
-            }
-            this.id = Integer.parseInt(attributes[0]);
-            this.path = (attributes.length == 1 || isBlank(attributes[1]) ? ERROR_LOCATION : attributes[1]);
-        }
-
-        public static Track of(String... attributes) throws ITunesException {
-            return new Track(attributes);
-        }
-
-        public int getId() {
-            return id;
-        }
-
-        public String getPath() {
-            return path;
-        }
-
-        public void setPath(String path) {
-            this.path = path;
-        }
-
-        @Override
-        public String toString() {
-            return "Track " + id + " \"" + path + "\"";
-        }
-
-    }
 }

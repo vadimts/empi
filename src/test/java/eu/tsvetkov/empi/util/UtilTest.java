@@ -33,7 +33,7 @@ public class UtilTest {
     public void getPlaylistTracks() throws CommandException {
         long now = new Date().getTime();
         System.out.println(now);
-        List<ITunes.Track> tracks = ITunes.getPlaylistTracksStat("cd");
+        List<Track> tracks = ITunes.getPlaylistTracksStat("cd");
         tracks.forEach(System.out::println);
         System.out.println(new Date().getTime() - now);
     }

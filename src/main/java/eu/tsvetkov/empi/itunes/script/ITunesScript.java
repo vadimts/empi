@@ -1,10 +1,8 @@
 package eu.tsvetkov.empi.itunes.script;
 
 import eu.tsvetkov.empi.error.itunes.ITunesException;
-import eu.tsvetkov.empi.util.ITunes;
-import eu.tsvetkov.empi.util.ITunes.Track;
+import eu.tsvetkov.empi.util.Track;
 
-import java.nio.file.Path;
 import java.util.List;
 
 /**

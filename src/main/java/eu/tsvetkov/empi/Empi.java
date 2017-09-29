@@ -26,7 +26,7 @@ public class Empi {
         // Print help and exit, if desired.
         if(Util.isBlank(argsString) || "-h".equalsIgnoreCase(argsString)) {
             System.out.println("empi <COMMANDS> <DIR>\n" +
-                "Commands:\n" +
+                "█ Commands:\n" +
                 "-cap          Capitalize file names\n" +
                 "-cREGEX       Clear strings matching REGEX in file names\n" +
                 "-dry          Dry run\n" +

@@ -5,11 +5,9 @@ import eu.tsvetkov.empi.itunes.script.AppleScript;
 import eu.tsvetkov.empi.itunes.script.ITunesScript;
 import eu.tsvetkov.empi.itunes.script.ScriptException;
 import eu.tsvetkov.empi.itunes.script.VBScript;
-import eu.tsvetkov.empi.util.ITunes.Track;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.nio.file.Path;
 import java.util.List;
 
 import static eu.tsvetkov.empi.util.Script.OperatingSystem.MAC;

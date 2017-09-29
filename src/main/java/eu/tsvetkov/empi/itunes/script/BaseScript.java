@@ -2,13 +2,11 @@ package eu.tsvetkov.empi.itunes.script;
 
 import eu.tsvetkov.empi.error.itunes.ITunesException;
 import eu.tsvetkov.empi.error.itunes.PlaylistNotFoundException;
-import eu.tsvetkov.empi.util.ITunes;
-import eu.tsvetkov.empi.util.ITunes.Track;
+import eu.tsvetkov.empi.util.Track;
 import eu.tsvetkov.empi.util.SLogger;
 import eu.tsvetkov.empi.util.Util;
 
 import java.io.*;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
