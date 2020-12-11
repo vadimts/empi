@@ -1,20 +1,21 @@
 package eu.tsvetkov.empi.util;
 
-import eu.tsvetkov.empi.error.CommandException;
 import eu.tsvetkov.empi.error.FileException;
+import eu.tsvetkov.empi.itunes.script.BaseScript;
 import eu.tsvetkov.empi.mp3.Mp3File;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
+import java.lang.reflect.ParameterizedType;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.stream.Stream;
 
-import static eu.tsvetkov.empi.util.ITunes.Track;
 import static java.util.Arrays.asList;
-import static java.util.stream.Collectors.partitioningBy;
+import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 
 /**
@@ -94,29 +95,56 @@ public class Util {
         return isNotBlank(cs1) && isNotBlank(cs2) && equal(cs1, cs2);
     }
 
+    public static String escape(String in) {
+        String out = "";
+        for (char c : in.toCharArray()) {
+            if (c >= 128)
+                out += "\\u" + String.format("%04X", (int) c);
+            else
+                out += c;
+        }
+        return out;
+    }
+
+    public static String[] getArray(Object... items) {
+        return getList(items).parallelStream().toArray(String[]::new);
+    }
+
+    public static <T> Class<T> getGenericType(Object superclassInstance) {
+        return (Class<T>) ((ParameterizedType) superclassInstance.getClass().getGenericSuperclass()).getActualTypeArguments()[0];
+    }
+
+    public static <T> T newGenericTypeInstance(Object superclassInstance) throws Exception {
+        return (T) getGenericType(superclassInstance).newInstance();
+    }
+
     public static List<String> getList(Object... items) {
-        ArrayList<String> list = new ArrayList<>();
-        for (Object item : items) {
-            if (item == null || (item instanceof String && isBlank((String) item))) {
-                continue;
-            }
-            if (item instanceof Collection) {
-                list.addAll((Collection<String>) item);
-            } else if (item instanceof String[]) {
-                list.addAll(asList((String[]) item));
-            } else {
-                list.add((String) item);
+        List<String> list = new ArrayList<>();
+        if(items != null) {
+            for (Object item : items) {
+                if (item == null || (item instanceof String && isBlank((String) item))) {
+                    continue;
+                }
+                if (item instanceof Collection) {
+                    ((Collection<Object>) item).parallelStream().filter(x -> isNotBlank(x.toString())).map(Object::toString).forEachOrdered(list::add);
+                } else if (item instanceof Object[]) {
+                    getList((Object[]) item).forEach(list::add);
+                } else if (item instanceof BaseScript) {
+                    list.addAll(((BaseScript) item).getScript());
+                } else {
+                    list.add(item.toString());
+                }
             }
         }
         return list;
     }
 
-    public static final <T, E extends Exception> Stream<T> getStreamWithoutException(ThrowingStreamMethod<T, E> method, T param) {
+    public static <T, E extends Exception> Stream<T> getStreamWithoutException(ThrowingStreamMethod<T, E> method, T param) {
         try {
             return method.run(param);
         } catch (Exception e) {
             e.printStackTrace();
-            return Stream.<T>empty();
+            return Stream.empty();
         }
     }
 
@@ -141,12 +169,28 @@ public class Util {
         return !isBlank(cs);
     }
 
+    public static boolean startsWith(final String s, final String start) {
+        return isNotBlank(s) && s.startsWith(start);
+    }
+
+    public static boolean isNotEmpty(final Collection collection) {
+        return (collection != null && !collection.isEmpty());
+    }
+
+    public static boolean isEmpty(final Object... array) {
+        return (array == null || array.length == 0);
+    }
+
+    public static boolean isNotEmpty(final Object... array) {
+        return !isEmpty(array);
+    }
+
     public static String join(Collection<String> objects, String separator) {
-        String output = "";
-        for (Iterator<String> i = objects.iterator(); i.hasNext(); ) {
-            output += i.next() + (i.hasNext() ? separator : "");
-        }
-        return output;
+        return objects.parallelStream().collect(joining(separator));
+    }
+
+    public static String join(Collection<String> objects, String alter, String separator) {
+        return objects.parallelStream().map(x -> String.format(alter, x)).collect(joining(separator));
     }
 
     public static String join(Collection<String> objects) {
@@ -159,6 +203,14 @@ public class Util {
 
     public static String join(String[] objects, String separator) {
         return join(asList(objects), separator);
+    }
+
+    public static String joinLines(Object... objects) {
+        return join(getList(objects), "\n");
+    }
+
+    public static String joinLinesPrefix(String prefix, Object... objects) {
+        return joinLines(getList(objects).stream().map(x -> prefix + x).collect(toList()));
     }
 
     public static int length(final CharSequence cs) {
@@ -196,7 +248,7 @@ public class Util {
         }
     }
 
-    public static final <T, E extends Exception> T runWithoutException(ThrowingMethod<T, E> method) {
+    public static <T, E extends Exception> T runWithoutException(ThrowingMethod<T, E> method) {
         try {
             return method.run();
         } catch (Exception e) {

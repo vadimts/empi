@@ -7,6 +7,7 @@ import org.junit.Test;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.text.Normalizer;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -29,15 +30,6 @@ public class UtilTest {
     }
 
     @Test
-    public void getPlaylistTracksScript() {
-        long now = new Date().getTime();
-        System.out.println(now);
-        List<ITunes.Track> fs = ITunes.Script.getPlaylistTracks("cd");
-        fs.forEach(System.out::println);
-        System.out.println(new Date().getTime() - now);
-    }
-
-    @Test
     public void getPlaylistTracks() throws CommandException {
         long now = new Date().getTime();
         System.out.println(now);
@@ -47,17 +39,16 @@ public class UtilTest {
     }
 
     @Test
-    public void getTrack() throws CommandException {
-        List<ITunes.Track> tracks = ITunes.Script.getPlaylistTracks("cd");
-        long now = new Date().getTime();
-        System.out.println(now);
-        ITunes.Track track = ITunes.getTrackById(tracks, 192000);
-        System.out.println(new Date().getTime() - now);
-        System.out.println(track);
+    public void joinStringArray() throws UnsupportedEncodingException {
+        assertEquals("abc", Util.join(new String[]{"a", "b", "c"}));
+        assertEquals("a,b,c", Util.join(new String[]{"a", "b", "c"}, ","));
+        assertEquals("aabbcc", Util.join(new String[]{"aa", "bb", "cc"}));
+        assertEquals("aa,bb,cc", Util.join(new String[]{"aa", "bb", "cc"}, ","));
+        assertEquals("POSIX file \"track1\", POSIX file \"track2\"", Util.join(Arrays.asList("track1", "track2"), "POSIX file \"%s\"",", "));
     }
 
     @Test
-    public void joinStringArray() throws UnsupportedEncodingException {
+    public void encodeNormalize() throws UnsupportedEncodingException {
         assertEquals("%C3%9F", URLEncoder.encode(Normalizer.normalize("ß", Normalizer.Form.NFKD), "UTF8"));
         assertEquals("ö", Normalizer.normalize("ö", Normalizer.Form.NFD));
         assertEquals("o%CC%88", URLEncoder.encode(Normalizer.normalize("ö", Normalizer.Form.NFD), "UTF8"));

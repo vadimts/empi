@@ -1,121 +1,141 @@
 package eu.tsvetkov.empi.mp3;
 
 import eu.tsvetkov.empi.error.Mp3Exception;
+import eu.tsvetkov.empi.error.NotSupportedFileException;
+import org.jaudiotagger.audio.AudioFileIO;
+import org.jaudiotagger.audio.exceptions.CannotWriteException;
+import org.jaudiotagger.audio.mp3.MP3AudioHeader;
+import org.jaudiotagger.audio.mp3.MP3File;
+import org.jaudiotagger.tag.FieldDataInvalidException;
+import org.jaudiotagger.tag.FieldKey;
+import org.jaudiotagger.tag.KeyNotFoundException;
+import org.jaudiotagger.tag.id3.AbstractID3v2Tag;
+import org.jaudiotagger.tag.id3.ID3v1Tag;
 
-import java.nio.file.Files;
+import java.lang.reflect.Field;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.LogManager;
 
 import static eu.tsvetkov.empi.mp3.Mp3Tag.*;
-import static eu.tsvetkov.empi.util.Util.defaultString;
-import static eu.tsvetkov.empi.util.Util.differNotBlank;
 
 /**
  * @author Vadim Tsvetkov (dev@tsvetkov.eu)
  */
-public abstract class Mp3File<T, U, V> {
+public class JTag extends Mp3File<MP3File, ID3v1Tag, AbstractID3v2Tag> {
 
-    public static final String FILE_SUFFIX = ".mp3";
+    private static final Map<Mp3Tag, FieldKey> FIELD_KEYS = new HashMap<>();
 
-    T mp3File;
-    U tag1;
-    V tag2;
-    Path filePath;
+    static {
+        // Disable default console logging.
+        LogManager.getLogManager().reset();
 
-    public Mp3File(Path filePath) throws Mp3Exception {
-        this.filePath = filePath;
-        this.mp3File = getMp3File(filePath);
-        this.tag2 = getID3v2();
-        this.tag1 = getID3v1();
+        FIELD_KEYS.put(TITLE, FieldKey.TITLE);
+        FIELD_KEYS.put(TITLE_SORT, FieldKey.TITLE_SORT);
+        FIELD_KEYS.put(ARTIST, FieldKey.ARTIST);
+        FIELD_KEYS.put(ARTIST_SORT, FieldKey.ARTIST_SORT);
+        FIELD_KEYS.put(ALBUM, FieldKey.ALBUM);
+        FIELD_KEYS.put(ALBUM_SORT, FieldKey.ALBUM_SORT);
+        FIELD_KEYS.put(ALBUM_ARTIST, FieldKey.ALBUM_ARTIST);
+        FIELD_KEYS.put(ALBUM_ARTIST_SORT, FieldKey.ALBUM_ARTIST_SORT);
+        FIELD_KEYS.put(COMPOSER, FieldKey.COMPOSER);
+        FIELD_KEYS.put(COMPOSER_SORT, FieldKey.COMPOSER_SORT);
+        FIELD_KEYS.put(GROUPING, FieldKey.GROUPING);
+        FIELD_KEYS.put(GENRE, FieldKey.GENRE);
+        FIELD_KEYS.put(YEAR, FieldKey.YEAR);
+        FIELD_KEYS.put(TRACK_NO, FieldKey.TRACK);
+        FIELD_KEYS.put(TRACK_TOTAL, FieldKey.TRACK_TOTAL);
+        FIELD_KEYS.put(DISC_NO, FieldKey.DISC_NO);
+        FIELD_KEYS.put(DISC_TOTAL, FieldKey.DISC_TOTAL);
+        FIELD_KEYS.put(COMPILATION, FieldKey.IS_COMPILATION);
+        FIELD_KEYS.put(RATING, FieldKey.RATING);
+        FIELD_KEYS.put(COMMENT, FieldKey.COMMENT);
     }
 
-    public static boolean isMp3File(Path filePath) {
-        return (Files.isRegularFile(filePath) && filePath.toString().toLowerCase().endsWith(FILE_SUFFIX));
+    public JTag(Path filePath) throws Mp3Exception {
+        super(filePath);
     }
 
-    public Path getFilePath() {
-        return filePath;
-    }
-
-    public String getTag(Mp3Tag tag) {
-        return defaultString((tag2 != null ? getTag2(tag) : null), (TAGS_ID3V1.contains(tag) && tag1 != null ? getTag1(tag) : null));
-    }
-
-    public boolean getTagBoolean(Mp3Tag tag) {
-        return "1".equals(getTag(tag));
-    }
-
-    public Map<Mp3Tag, String> getTagMap(List<Mp3Tag> tags) {
-        Map<Mp3Tag, String> map = new LinkedHashMap<>();
-        for (Mp3Tag tag : tags) {
-            map.put(tag, getTag(tag));
+    public long getSize() {
+        try {
+            Field fileSizeField = MP3AudioHeader.class.getDeclaredField("fileSize");
+            fileSizeField.setAccessible(true);
+            return (Long) fileSizeField.get(mp3File.getMP3AudioHeader());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return -1;
         }
-        return map;
     }
 
-    public Map<Mp3Tag, String> getTagMapAll() {
-        return getTagMap(TAGS_ALL);
+    @Override
+    public String getTag1(Mp3Tag tag) {
+        return tag1.getFirst(FIELD_KEYS.get(tag));
     }
 
-    public List<String> getTags(List<Mp3Tag> tags) {
-        return new ArrayList<>(getTagMap(tags).values());
-    }
-
-    public List<String> getTagsAll() {
-        return getTags(TAGS_ALL);
-    }
-
-    public abstract void save() throws Mp3Exception;
-
-    public void setTag(Mp3Tag tag, String value) throws Mp3Exception {
-        if (tag2 != null) setTag2(tag, value);
-        if (TAGS_ID3V1.contains(tag) && tag1 != null) setTag1(tag, value);
-    }
-
-    public void setTagBoolean(Mp3Tag tag, Boolean value) throws Mp3Exception {
-        setTag(tag, (value ? "1" : ""));
-    }
-
-    public Mp3File<T, U, V> setTags(Map<Mp3Tag, String> tagValues) throws Mp3Exception {
-        for (Mp3Tag tag : tagValues.keySet()) {
-            setTag(tag, tagValues.get(tag));
+    @Override
+    public String getTag2(Mp3Tag tag) {
+        try {
+            return tag2.getFirst(FIELD_KEYS.get(tag));
+        } catch (Exception e) {
+            System.out.println("Error getting tag " + tag);
+            e.printStackTrace();
+            throw e;
         }
-        return this;
     }
 
-    protected abstract U getID3v1();
+    @Override
+    public void save() throws Mp3Exception {
+        try {
+            mp3File.commit();
+        } catch (CannotWriteException e) {
+            throw new Mp3Exception("Error saving MP3 file at path '" + filePath + "'", e);
+        }
+    }
 
-    protected abstract V getID3v2();
+    @Override
+    public void setTag1(Mp3Tag tag, String value) throws Mp3Exception {
+        try {
+            tag1.setField(FIELD_KEYS.get(tag), value);
+        } catch (FieldDataInvalidException e) {
+            throw new Mp3Exception("Error setting Id3v1 tag " + tag + " = '" + value + "'", e);
+        }
+    }
 
-    protected abstract T getMp3File(Path filePath) throws Mp3Exception;
+    @Override
+    public void setTag2(Mp3Tag tag, String value) throws Mp3Exception {
+        try {
+            tag2.setField(FIELD_KEYS.get(tag), value);
+        } catch (FieldDataInvalidException e) {
+            throw new Mp3Exception("Error setting Id3v2 tag " + tag + " = '" + value + "'", e);
+        }
+    }
 
-    protected abstract String getTag1(Mp3Tag tag);
+    @Override
+    protected ID3v1Tag getID3v1() {
+        return mp3File.getID3v1Tag();
+    }
 
-    protected abstract String getTag2(Mp3Tag tag);
+    @Override
+    protected AbstractID3v2Tag getID3v2() {
+        return mp3File.getID3v2Tag();
+    }
 
-    protected abstract void setTag1(Mp3Tag tag, String value) throws Mp3Exception;
+    @Override
+    protected MP3File getMp3File(Path filePath) throws Mp3Exception {
+        if(!isMp3File(filePath)) {
+            throw new NotSupportedFileException("No MP3 file on path '" + filePath + "'");
+        }
 
-    protected abstract void setTag2(Mp3Tag tag, String value) throws Mp3Exception;
+        try {
+            return (MP3File) AudioFileIO.read(filePath.toFile());
+        } catch (Exception e) {
+            throw new Mp3Exception("Could not read MP3 file from path '" + filePath + "'", e);
+        }
+    }
 
     @Override
     public String toString() {
-        String artist = getTag(ARTIST);
-        String sortArtist = getTag(ARTIST_SORT);
-        String title = getTag(TITLE);
-        String sortTitle = getTag(TITLE_SORT);
-        String album = getTag(ALBUM);
-        String sortAlbum = getTag(ALBUM_SORT);
-        String year = getTag(YEAR);
-        return artist + (differNotBlank(artist, sortArtist) ? "/" + sortArtist : "")
-            + " - " + title + (differNotBlank(title, sortTitle) ? "/" + sortTitle : "")
-            + " ("
-            + album + (differNotBlank(album, sortAlbum) ? "/" + sortAlbum : "")
-            + ", " + year
-            + (getTagBoolean(COMPILATION) ? ", COMP" : "")
-            + ")"
-            + ": ID3v" + (tag1 != null ? "1" : "") + (tag1 != null && tag2 != null ? "+" : "") + (tag2 != null ? "2" : "");
+        return super.toString() + " " + getSize();
     }
 }

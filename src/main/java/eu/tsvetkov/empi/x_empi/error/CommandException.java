@@ -1,4 +1,4 @@
-package eu.tsvetkov.empi.error;
+package eu.tsvetkov.empi.x_empi.error;
 
 /**
  * @author Vadim Tsvetkov (dev@tsvetkov.eu)
