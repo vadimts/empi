@@ -1,6 +1,6 @@
 package eu.tsvetkov.empi.util;
 
-import eu.tsvetkov.empi.x_empi.script.BaseScript;
+import eu.tsvetkov.empi.itunes.Script;
 
 import java.lang.reflect.ParameterizedType;
 import java.nio.file.Path;
@@ -179,8 +179,8 @@ public class Util {
                     ((Collection<Object>) item).parallelStream().filter(x -> isNotBlank(x.toString())).map(Object::toString).forEachOrdered(list::add);
                 } else if (item instanceof Object[]) {
                     getList((Object[]) item).forEach(list::add);
-                } else if (item instanceof BaseScript) {
-                    list.addAll(((BaseScript) item).getScript());
+                } else if (item instanceof Script) {
+                    list.add(((Script) item).getScript());
                 } else {
                     list.add(item.toString());
                 }

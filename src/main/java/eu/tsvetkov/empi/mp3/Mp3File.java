@@ -1,8 +1,6 @@
 package eu.tsvetkov.empi.mp3;
 
 import eu.tsvetkov.empi.model.AudioArtwork;
-import eu.tsvetkov.empi.x_empi.error.Mp3Exception;
-import eu.tsvetkov.empi.x_empi.error.NotSupportedFileException;
 import org.jaudiotagger.audio.AudioFileIO;
 import org.jaudiotagger.audio.exceptions.CannotWriteException;
 import org.jaudiotagger.audio.mp3.MP3AudioHeader;
@@ -57,7 +55,7 @@ public class Mp3File {
         FIELD_KEYS.put(COMMENT, FieldKey.COMMENT);
     }
 
-    List<Mp3Exception> errors = new ArrayList<>();
+    List<Exception> errors = new ArrayList<>();
     Path filePath;
     MP3File mp3File;
     ID3v1Tag tag1;
@@ -73,7 +71,7 @@ public class Mp3File {
             this.mp3File = getMp3File(filePath);
             this.tag2 = getID3v2();
             this.tag1 = getID3v1();
-        } catch (Mp3Exception e) {
+        } catch (Exception e) {
             errors.add(e);
         }
     }
@@ -178,7 +176,7 @@ public class Mp3File {
         try {
             mp3File.commit();
         } catch (CannotWriteException e) {
-            errors.add(new Mp3Exception("ScriptError saving MP3 file at path '" + filePath + "'", e));
+            errors.add(e);
         }
     }
 
@@ -191,7 +189,7 @@ public class Mp3File {
         try {
             tag1.setField(FIELD_KEYS.get(tag), value);
         } catch (FieldDataInvalidException e) {
-            errors.add(new Mp3Exception("ScriptError setting Id3v1 tag " + tag + " = '" + value + "'", e));
+            errors.add(e);
         }
     }
 
@@ -199,7 +197,7 @@ public class Mp3File {
         try {
             tag2.setField(FIELD_KEYS.get(tag), value);
         } catch (FieldDataInvalidException e) {
-            errors.add(new Mp3Exception("ScriptError setting Id3v2 tag " + tag + " = '" + value + "'", e));
+            errors.add(e);
         }
     }
 
@@ -232,15 +230,11 @@ public class Mp3File {
         return mp3File.getID3v2Tag();
     }
 
-    protected MP3File getMp3File(Path filePath) throws Mp3Exception {
+    protected MP3File getMp3File(Path filePath) throws Exception {
         if (!isMp3File(filePath)) {
-            throw new NotSupportedFileException("No MP3 file on path '" + filePath + "'");
+            throw new IllegalArgumentException("No MP3 file on path '" + filePath + "'");
         }
 
-        try {
-            return (MP3File) AudioFileIO.read(filePath.toFile());
-        } catch (Exception e) {
-            throw new Mp3Exception("Could not read MP3 file from path '" + filePath + "'", e);
-        }
+        return (MP3File) AudioFileIO.read(filePath.toFile());
     }
 }
