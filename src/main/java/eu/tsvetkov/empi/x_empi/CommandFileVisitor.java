@@ -1,6 +1,6 @@
-package eu.tsvetkov.empi;
+package eu.tsvetkov.empi.x_empi;
 
-import eu.tsvetkov.empi.mp3.BaseMp3File;
+import eu.tsvetkov.empi.mp3.Mp3File;
 import eu.tsvetkov.empi.util.Util;
 import eu.tsvetkov.empi.x_empi.command.Command;
 import eu.tsvetkov.empi.x_empi.error.CommandException;
@@ -65,7 +65,7 @@ class CommandFileVisitor extends SimpleFileVisitor<Path> {
 
     @Override
     public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-        if (isIgnored(file) || !BaseMp3File.isMp3File(file)) {
+        if (isIgnored(file) || !Mp3File.isMp3File(file)) {
             return CONTINUE;
         }
         pathsToVisit.add(file);

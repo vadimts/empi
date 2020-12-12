@@ -1,4 +1,6 @@
-package eu.tsvetkov.empi.empi2;
+package eu.tsvetkov.empi.model;
+
+import eu.tsvetkov.empi.ops.MusicOps;
 
 public class Playlist {
     String name;

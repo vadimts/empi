@@ -1,6 +1,5 @@
-package eu.tsvetkov.empi.empi2;
+package eu.tsvetkov.empi.itunes;
 
-import eu.tsvetkov.empi.itunes.AppleScript;
 import org.junit.Assert;
 import org.junit.Test;
 

@@ -1,4 +1,4 @@
-package eu.tsvetkov.empi.mp3;
+package eu.tsvetkov.empi.model;
 
 import eu.tsvetkov.empi.util.FileUtil;
 import eu.tsvetkov.empi.util.SLogger;
@@ -15,7 +15,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import static eu.tsvetkov.empi.mp3.AudioArtwork.Status.*;
+import static eu.tsvetkov.empi.model.AudioArtwork.Status.*;
 import static java.util.Arrays.asList;
 
 public class AudioArtwork {

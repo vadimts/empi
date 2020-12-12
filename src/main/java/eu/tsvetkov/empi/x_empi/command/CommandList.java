@@ -1,4 +1,4 @@
-package eu.tsvetkov.empi.command;
+package eu.tsvetkov.empi.x_empi.command;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -22,12 +22,12 @@ public abstract class CommandList<T extends Command> extends Command {
     }
 
     protected void setAllButLastDry() {
-        if(commands.isEmpty()) {
+        if (commands.isEmpty()) {
             return;
         }
         for (T command : commands) {
             command.setDryRun(true);
         }
-        commands.get(commands.size()-1).setDryRun(dryRun);
+        commands.get(commands.size() - 1).setDryRun(dryRun);
     }
 }

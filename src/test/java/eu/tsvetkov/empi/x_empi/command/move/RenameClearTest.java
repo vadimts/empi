@@ -1,8 +1,7 @@
-package eu.tsvetkov.empi.command.move;
+package eu.tsvetkov.empi.x_empi.command.move;
 
-import eu.tsvetkov.empi.command.CommandTest;
-import eu.tsvetkov.empi.command.move.RenameClear;
-import eu.tsvetkov.empi.error.CommandException;
+import eu.tsvetkov.empi.x_empi.command.CommandTest;
+import eu.tsvetkov.empi.x_empi.error.CommandException;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;

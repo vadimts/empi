@@ -1,9 +1,9 @@
-package eu.tsvetkov.empi.command.move;
+package eu.tsvetkov.empi.x_empi.command.move;
 
 import junit.framework.Assert;
 import org.junit.Test;
 
-import static eu.tsvetkov.empi.command.move.UnderscoreToBlank.isUnderscoreFormat;
+import static eu.tsvetkov.empi.x_empi.command.move.UnderscoreToBlank.isUnderscoreFormat;
 import static junit.framework.Assert.assertTrue;
 
 /**

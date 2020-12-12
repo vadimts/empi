@@ -1,8 +1,7 @@
-package eu.tsvetkov.empi.command.move;
+package eu.tsvetkov.empi.x_empi.command.move;
 
-import eu.tsvetkov.empi.error.CommandException;
 import eu.tsvetkov.empi.mp3.Mp3File;
-import eu.tsvetkov.empi.mp3.BaseMp3File;
+import eu.tsvetkov.empi.x_empi.error.CommandException;
 
 import java.nio.file.Path;
 
@@ -17,7 +16,7 @@ public class OrganizeByArtist extends Move {
     @Override
     protected Path transformPath(Path sourcePath) throws CommandException {
         try {
-            BaseMp3File f = new Mp3File(sourcePath);
+            Mp3File f = new Mp3File(sourcePath);
         } catch (Exception e) {
         }
         return null;

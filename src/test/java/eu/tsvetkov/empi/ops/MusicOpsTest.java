@@ -1,4 +1,4 @@
-package eu.tsvetkov.empi.empi2;
+package eu.tsvetkov.empi.ops;
 
 import eu.tsvetkov.empi.itunes.AppleScript;
 import eu.tsvetkov.empi.model.AudioArtwork;
@@ -6,8 +6,6 @@ import eu.tsvetkov.empi.model.TrackId;
 import eu.tsvetkov.empi.model.TrackList;
 import eu.tsvetkov.empi.mp3.Mp3File;
 import eu.tsvetkov.empi.mp3.Mp3Tag;
-import eu.tsvetkov.empi.ops.MusicOps;
-import eu.tsvetkov.empi.ops.ScriptRun;
 import eu.tsvetkov.empi.util.FileUtil;
 import eu.tsvetkov.empi.util.SLogger;
 import eu.tsvetkov.empi.util.Str;
@@ -28,11 +26,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static eu.tsvetkov.empi.empi2.MusicOpsTest.MockType.*;
 import static eu.tsvetkov.empi.itunes.AppleScript.getPlaylistSize;
 import static eu.tsvetkov.empi.mp3.Mp3Tag.*;
 import static eu.tsvetkov.empi.ops.MusicOps.findArtworkInPath;
 import static eu.tsvetkov.empi.ops.MusicOps.matchArtworkFileName;
+import static eu.tsvetkov.empi.ops.MusicOpsTest.MockType.*;
 import static eu.tsvetkov.empi.util.FileUtil.getAudioFilePaths;
 import static eu.tsvetkov.empi.util.Util.*;
 import static java.util.Arrays.asList;

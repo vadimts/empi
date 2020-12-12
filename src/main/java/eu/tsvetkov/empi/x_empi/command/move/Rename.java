@@ -1,8 +1,8 @@
-package eu.tsvetkov.empi.command.move;
+package eu.tsvetkov.empi.x_empi.command.move;
 
-import eu.tsvetkov.empi.error.CommandException;
-import eu.tsvetkov.empi.error.CommandNotAppliedException;
 import eu.tsvetkov.empi.util.Util;
+import eu.tsvetkov.empi.x_empi.error.CommandException;
+import eu.tsvetkov.empi.x_empi.error.CommandNotAppliedException;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -23,15 +23,15 @@ public abstract class Rename extends Move {
         return Files.isDirectory(sourcePath);
     }
 
+    protected abstract String transformFileName(String fileName) throws CommandException;
+
     @Override
     protected final Path transformPath(Path sourcePath) throws CommandException {
         this.sourcePath = sourcePath;
         Path targetPath = sourcePath.getParent().resolve(Paths.get(transformFileName(sourcePath.getFileName().toString())));
-        if(sourcePath.equals(targetPath)) {
+        if (sourcePath.equals(targetPath)) {
             throw new CommandNotAppliedException("Command " + this + " didn't change file name '" + sourcePath.getFileName() + "'");
         }
         return targetPath;
     }
-
-    protected abstract String transformFileName(String fileName) throws CommandException;
 }

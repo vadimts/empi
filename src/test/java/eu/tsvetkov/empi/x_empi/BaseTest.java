@@ -1,4 +1,4 @@
-package eu.tsvetkov.empi;
+package eu.tsvetkov.empi.x_empi;
 
 import eu.tsvetkov.empi.mp3.Mp3Tag;
 import eu.tsvetkov.empi.mp3.TagMap;
@@ -15,13 +15,13 @@ import java.util.HashMap;
  */
 public class BaseTest {
 
-    public static final String WORD_DE_ALL_UMLAUTS = "übergrößengeschäft";
-    public static final String WORD_DE_ALL_UMLAUTS_TRANSL = "ubergrossengeschaft";
     public static final String ALBUM_NEW = "new album name";
     public static final String ALBUM_OLD = "old album name";
-    public static final String TRACKNO_OLD = "old track no";
     public static final String ARTIST_OLD = "old artist";
     public static final String TITLE_OLD = "old title";
+    public static final String TRACKNO_OLD = "old track no";
+    public static final String WORD_DE_ALL_UMLAUTS = "übergrößengeschäft";
+    public static final String WORD_DE_ALL_UMLAUTS_TRANSL = "ubergrossengeschaft";
 
     protected void assertTestPath(String path) throws Exception {
         Path testPath = getTestFilePath(path);
@@ -42,12 +42,12 @@ public class BaseTest {
         return new TagMap(oldTags);
     }
 
-    protected Path getTestFilePath(String path) throws Exception {
-        return Paths.get(getClass().getResource("/mp3/" + path).toURI());
-    }
-
     protected String getTestFileName(String path) throws Exception {
         return getTestFilePath(path).getFileName().toString();
+    }
+
+    protected Path getTestFilePath(String path) throws Exception {
+        return Paths.get(getClass().getResource("/mp3/" + path).toURI());
     }
 
 }

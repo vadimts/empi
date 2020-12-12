@@ -1,12 +1,12 @@
-package eu.tsvetkov.empi.command.move;
+package eu.tsvetkov.empi.x_empi.command.move;
 
-import eu.tsvetkov.empi.command.CommandTest;
 import eu.tsvetkov.empi.util.Util;
+import eu.tsvetkov.empi.x_empi.command.CommandTest;
 import org.junit.Before;
 import org.junit.Test;
 
 import static eu.tsvetkov.empi.util.Util.SEP;
-import static eu.tsvetkov.empi.command.move.RenameRegex.*;
+import static eu.tsvetkov.empi.x_empi.command.move.RenameRegex.GROUP;
 import static org.junit.Assert.assertEquals;
 
 /**

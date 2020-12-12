@@ -1,4 +1,4 @@
-package eu.tsvetkov.empi;
+package eu.tsvetkov.empi.x_empi;
 
 import eu.tsvetkov.empi.mp3.Mp3Tag;
 import eu.tsvetkov.empi.util.Util;

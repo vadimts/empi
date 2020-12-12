@@ -1,8 +1,7 @@
-package eu.tsvetkov.empi.empi2;
+package eu.tsvetkov.empi.util;
 
 import eu.tsvetkov.empi.mp3.Mp3File;
-import eu.tsvetkov.empi.util.SLogger;
-import eu.tsvetkov.empi.util.Util;
+import eu.tsvetkov.empi.ops.MusicOps;
 
 import java.io.File;
 import java.io.IOException;
@@ -12,9 +11,12 @@ import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import static java.nio.charset.Charset.defaultCharset;
+import static java.nio.file.StandardOpenOption.APPEND;
+import static java.nio.file.StandardOpenOption.CREATE;
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toList;
 
@@ -24,6 +26,14 @@ public class FileUtil {
     public static final String SEP_RE = "\\" + Util.SEP;
     public static final Path TMP_DIR = Paths.get(System.getProperty("java.io.tmpdir"));
     private static SLogger log = new SLogger();
+
+    public static void appendLines(Path textFilePath, List<String> lines) {
+        try {
+            Files.write(textFilePath, lines, CREATE, APPEND);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     public static Path copy(Path src, Path dest) {
         try {
@@ -42,6 +52,11 @@ public class FileUtil {
         }
     }
 
+    public static int fileCount(Path dir) {
+        List<Path> list = list(dir);
+        return (list != null ? list.size() : -1);
+    }
+
     public static List<Path> getAudioFilePaths(Path dir) {
         return getAudioFilePathsMatching(dir);
     }
@@ -50,11 +65,8 @@ public class FileUtil {
         return getFilePathsMatching(dir, file -> isAudioFile(file) && pathMatchesOR(file, matchers));
     }
 
-    public static List<String> getAudioFiles(Path dir) {
-        return getAudioFilePaths(dir).stream()
-            .map(Path::toString)
-            .sorted(String.CASE_INSENSITIVE_ORDER)
-            .collect(toList());
+    public static List<Mp3File> getAudioFiles(Path dir) {
+        return getAudioFilePaths(dir).stream().map(MusicOps::getMp3File).collect(toList());
     }
 
     public static String getFileExtension(String file) {
@@ -65,8 +77,8 @@ public class FileUtil {
         return getFileExtension(file.toString());
     }
 
-    public static List<List<Path>> getFilePathsLists(Path dir, Predicate<? super Path>... matchers) {
-        List<List<Path>> pathsLists = Stream.generate(() -> new ArrayList<Path>()).limit(matchers.length).collect(toList());
+    public static List<List<Path>> getFilePathsLists(Path dir, Predicate<Path>... matchers) {
+        List<List<Path>> pathsLists = Stream.generate((Supplier<ArrayList<Path>>) ArrayList::new).limit(matchers.length).collect(toList());
         try {
             Files.walkFileTree(dir, new SimpleFileVisitor<>() {
                 @Override
@@ -141,10 +153,6 @@ public class FileUtil {
         }
     }
 
-    public static List<Mp3File> getTracks(Path dir) {
-        return getAudioFilePaths(dir).stream().map(MusicOps::getMp3File).collect(toList());
-    }
-
     public static boolean isAudioFile(Path filePath) {
         String pathLow = filePath.toString().toLowerCase();
         return (/*Files.isRegularFile(filePath) &&*/ (pathLow.endsWith(".mp3") /*|| pathLow.endsWith("m4a") || pathLow.endsWith("ogg")*/));
@@ -159,9 +167,26 @@ public class FileUtil {
 //        return path.endsWith(File.separator); - Paths.get() strips the last /
     }
 
+    public static boolean isDirEmpty(Path dir) {
+        try {
+            return Files.list(dir).count() == 0;
+        } catch (IOException e) {
+            return true;
+        }
+    }
+
     public static boolean isPictureFile(Path filePath) {
         String pathLow = filePath.toString().toLowerCase();
         return (/*Files.isRegularFile(filePath) &&*/ pathLow.endsWith(".jpg") || pathLow.endsWith(".jpeg") || pathLow.endsWith(".png") || pathLow.endsWith(".gif") || (pathLow.endsWith(".bmp") || pathLow.endsWith(".tiff")));
+    }
+
+    public static List<Path> list(Path dir) {
+        try {
+            return Files.list(dir).collect(toList());
+        } catch (IOException e) {
+            log.error(e);
+            return null;
+        }
     }
 
     public static Path mkdir(Path dir, String... subDir) {

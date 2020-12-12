@@ -1,51 +1,23 @@
 package eu.tsvetkov.empi.util;
 
-import eu.tsvetkov.empi.error.CommandException;
-import eu.tsvetkov.empi.error.FileException;
+import eu.tsvetkov.empi.itunes.AppleScript;
 import org.junit.Test;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.text.Normalizer;
-import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import java.util.Map;
 
+import static eu.tsvetkov.empi.itunes.AppleScript.*;
+import static java.util.Arrays.asList;
+import static java.util.Collections.EMPTY_LIST;
 import static org.junit.Assert.assertEquals;
 
 /**
  * @author Vadim Tsvetkov (dev@tsvetkov.eu)
  */
 public class UtilTest {
-
-    @Test
-    public void getMp3InDirectory() throws FileException {
-        Stream<String> files = Util.File.getMp3InDirectory("/Users/vadim/Music/test");
-//        Stream<String> files = Util.File.getMp3InDirectory("/mnt/alpaca/music/cd");
-        List<String> fileList = files.collect(Collectors.toList());
-        fileList.forEach(System.out::println);
-        System.out.println("Total " + fileList.size());
-    }
-
-    @Test
-    public void getPlaylistTracks() throws CommandException {
-        long now = new Date().getTime();
-        System.out.println(now);
-        List<Track> tracks = ITunes.getPlaylistTracksStat("cd");
-        tracks.forEach(System.out::println);
-        System.out.println(new Date().getTime() - now);
-    }
-
-    @Test
-    public void joinStringArray() throws UnsupportedEncodingException {
-        assertEquals("abc", Util.join(new String[]{"a", "b", "c"}));
-        assertEquals("a,b,c", Util.join(new String[]{"a", "b", "c"}, ","));
-        assertEquals("aabbcc", Util.join(new String[]{"aa", "bb", "cc"}));
-        assertEquals("aa,bb,cc", Util.join(new String[]{"aa", "bb", "cc"}, ","));
-        assertEquals("POSIX file \"track1\", POSIX file \"track2\"", Util.join(Arrays.asList("track1", "track2"), "POSIX file \"%s\"",", "));
-    }
 
     @Test
     public void encodeNormalize() throws UnsupportedEncodingException {
@@ -61,5 +33,38 @@ public class UtilTest {
         assertEquals("a,b,c", Util.join(new String[]{"a", "b", "c"}, ","));
         assertEquals("aabbcc", Util.join(new String[]{"aa", "bb", "cc"}));
         assertEquals("aa,bb,cc", Util.join(new String[]{"aa", "bb", "cc"}, ","));
+    }
+
+    @Test
+    public void getCurrentMethodName() {
+        assertEquals("getCurrentMethodName", Util.getCurrentMethodName());
+        assertEquals("testMethod", new Object() {
+            String testMethod() {
+                return Util.getCurrentMethodName();
+            }
+        }.testMethod());
+    }
+
+    @Test
+    public void getMatchGroupLists() {
+        String s1 = F1 + "\nfound track 11\nfound track 12\n" + F2 + "\n" + M1 + "\nmissing track 11\nmissing track 12\n" + M2 + "\n"
+            + F1 + "\nfound track 21\nfound track 22\n" + F2 + "\n" + M1 + "\nmissing track 21\nmissing track 22\n" + M2;
+        String s2 = F1 + "\nfound track 11\nfound track 12\n" + F2 + "\n" + M1 + "\n\n" + M2 + "\n"
+            + F1 + "\nfound track 21\nfound track 22\n" + F2 + "\n" + M1 + "\n\n" + M2 + "\n";
+        Map<String, List<String>> matchGroupLists1 = Util.getMatchGroupLists(AppleScript.RE_TRACK_PATHS, asList(F3, M3), s1);
+        assertEquals(asList("found track 11", "found track 12", "found track 21", "found track 22"), matchGroupLists1.get(F3));
+        assertEquals(asList("missing track 11", "missing track 12", "missing track 21", "missing track 22"), matchGroupLists1.get(M3));
+        Map<String, List<String>> matchGroupLists2 = Util.getMatchGroupLists(AppleScript.RE_TRACK_PATHS, asList(F3, M3), s2);
+        assertEquals(asList("found track 11", "found track 12", "found track 21", "found track 22"), matchGroupLists2.get(F3));
+        assertEquals(EMPTY_LIST, matchGroupLists2.get(M3));
+    }
+
+    @Test
+    public void joinStringArray() {
+        assertEquals("abc", Util.join(new String[]{"a", "b", "c"}));
+        assertEquals("a,b,c", Util.join(new String[]{"a", "b", "c"}, ","));
+        assertEquals("aabbcc", Util.join(new String[]{"aa", "bb", "cc"}));
+        assertEquals("aa,bb,cc", Util.join(new String[]{"aa", "bb", "cc"}, ","));
+        assertEquals("POSIX file \"track1\", POSIX file \"track2\"", Util.join(asList("track1", "track2"), "POSIX file `${1}`", ", "));
     }
 }

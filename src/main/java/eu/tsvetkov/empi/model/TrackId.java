@@ -1,4 +1,4 @@
-package eu.tsvetkov.empi.empi2;
+package eu.tsvetkov.empi.model;
 
 import eu.tsvetkov.empi.mp3.Mp3File;
 

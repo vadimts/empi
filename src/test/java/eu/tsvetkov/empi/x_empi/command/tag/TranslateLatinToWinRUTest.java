@@ -1,16 +1,14 @@
-package eu.tsvetkov.empi.command.tag;
+package eu.tsvetkov.empi.x_empi.command.tag;
 
-import eu.tsvetkov.empi.BaseTest;
-import eu.tsvetkov.empi.error.CommandException;
+import eu.tsvetkov.empi.x_empi.BaseTest;
+import eu.tsvetkov.empi.x_empi.error.CommandException;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.io.UnsupportedEncodingException;
 
-import static eu.tsvetkov.empi.command.tag.TranslateLatinToWinRU.isRussianInLatin;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static eu.tsvetkov.empi.x_empi.command.tag.TranslateLatinToWinRU.isRussianInLatin;
+import static org.junit.Assert.*;
 
 /**
  * @author Vadim Tsvetkov (dev@tsvetkov.eu)
@@ -27,9 +25,20 @@ public class TranslateLatinToWinRUTest extends BaseTest {
     @Test
     public void javaString() throws UnsupportedEncodingException {
         assertEquals("ÀÁÂÃÄÅ¨ÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞßàáâãäå¸æçèéêëìíîïðñòóôõö÷øùúûüýþÿ",
-          new String("АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя".getBytes("cp1251"), "latin1"));
+            new String("АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя".getBytes("cp1251"), "latin1"));
         assertEquals("АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя",
-          new String("ÀÁÂÃÄÅ¨ÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞßàáâãäå¸æçèéêëìíîïðñòóôõö÷øùúûüýþÿ".getBytes("latin1"), "cp1251"));
+            new String("ÀÁÂÃÄÅ¨ÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞßàáâãäå¸æçèéêëìíîïðñòóôõö÷øùúûüýþÿ".getBytes("latin1"), "cp1251"));
+    }
+
+    @Test
+    public void testIsRussianInLatin() throws CommandException {
+        assertFalse(isRussianInLatin(""));
+        assertFalse(isRussianInLatin("0"));
+        assertFalse(isRussianInLatin("1"));
+        assertFalse(isRussianInLatin("b"));
+        assertFalse(isRussianInLatin("El Niño"));
+        assertFalse(isRussianInLatin(WORD_DE_ALL_UMLAUTS));
+        assertTrue(isRussianInLatin("à"));
     }
 
     @Test
@@ -70,16 +79,6 @@ public class TranslateLatinToWinRUTest extends BaseTest {
         assertTransform("Моя Гвинея", "Ìîÿ Ãâèíåÿ");
         assertTransform("Лариса Мондрус и Инго Граф", "Ëà›èñà Ìîíä›óñ è Èíãî Ã›àô");
         assertTransform("До свидания", "Äî ñâèäàíèÿ");
-    }
-    @Test
-    public void testIsRussianInLatin() throws CommandException {
-        assertFalse(isRussianInLatin(""));
-        assertFalse(isRussianInLatin("0"));
-        assertFalse(isRussianInLatin("1"));
-        assertFalse(isRussianInLatin("b"));
-        assertFalse(isRussianInLatin("El Niño"));
-        assertFalse(isRussianInLatin(WORD_DE_ALL_UMLAUTS));
-        assertTrue(isRussianInLatin("à"));
     }
 
     protected void assertTransform(String expected, String value) throws CommandException {

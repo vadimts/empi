@@ -1,4 +1,4 @@
-package eu.tsvetkov.empi.empi2;
+package eu.tsvetkov.empi.itunes;
 
 import eu.tsvetkov.empi.util.Str;
 

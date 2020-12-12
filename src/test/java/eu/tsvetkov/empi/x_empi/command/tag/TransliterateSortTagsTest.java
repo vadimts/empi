@@ -1,16 +1,12 @@
-package eu.tsvetkov.empi.command.tag;
+package eu.tsvetkov.empi.x_empi.command.tag;
 
-import eu.tsvetkov.empi.BaseTest;
-import eu.tsvetkov.empi.error.CommandException;
-import eu.tsvetkov.empi.error.CommandNotAppliedException;
+import eu.tsvetkov.empi.x_empi.BaseTest;
+import eu.tsvetkov.empi.x_empi.error.CommandNotAppliedException;
 import org.junit.Before;
 import org.junit.Test;
 
-import static eu.tsvetkov.empi.command.tag.TranslateLatinToWinRU.isRussianInLatin;
-import static eu.tsvetkov.empi.command.tag.TransliterateSortTags.willTransliterate;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static eu.tsvetkov.empi.x_empi.command.tag.TransliterateSortTags.willTransliterate;
+import static org.junit.Assert.*;
 
 /**
  * @author Vadim Tsvetkov (dev@tsvetkov.eu)
@@ -22,16 +18,6 @@ public class TransliterateSortTagsTest extends BaseTest {
     @Before
     public void before() {
         command = new TransliterateSortTags();
-    }
-
-    @Test
-    public void transliteration() throws CommandNotAppliedException {
-        assertFalse(willTransliterate("S"));
-        assertFalse(willTransliterate("Scientist"));
-        assertFalse(willTransliterate("Scientist Rids The World Of The Evil Curse Of The Vampires"));
-        assertEquals("S", command.transform("S"));
-        assertEquals("Scientist", command.transform("Scientist"));
-        assertEquals("Scientist Rids The World Of The Evil Curse Of The Vampires", command.transform("Scientist Rids The World Of The Evil Curse Of The Vampires"));
     }
 
     @Test
@@ -85,6 +71,16 @@ public class TransliterateSortTagsTest extends BaseTest {
         assertTransform("Moya Gvineya", "Моя Гвинея");
         assertTransform("Larisa Mondrus i Ingho Graf", "Лариса Мондрус и Инго Граф");
         assertTransform("Do svidaniya", "До свидания");
+    }
+
+    @Test
+    public void transliteration() throws CommandNotAppliedException {
+        assertFalse(willTransliterate("S"));
+        assertFalse(willTransliterate("Scientist"));
+        assertFalse(willTransliterate("Scientist Rids The World Of The Evil Curse Of The Vampires"));
+        assertEquals("S", command.transform("S"));
+        assertEquals("Scientist", command.transform("Scientist"));
+        assertEquals("Scientist Rids The World Of The Evil Curse Of The Vampires", command.transform("Scientist Rids The World Of The Evil Curse Of The Vampires"));
     }
 
     protected void assertTransform(String expected, String value) {

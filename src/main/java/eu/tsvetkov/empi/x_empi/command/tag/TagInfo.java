@@ -1,6 +1,6 @@
-package eu.tsvetkov.empi.command.tag;
+package eu.tsvetkov.empi.x_empi.command.tag;
 
-import eu.tsvetkov.empi.error.CommandException;
+import eu.tsvetkov.empi.x_empi.error.CommandException;
 import eu.tsvetkov.empi.mp3.Mp3Tag;
 import eu.tsvetkov.empi.mp3.TagMap;
 

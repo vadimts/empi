@@ -1,7 +1,7 @@
-package eu.tsvetkov.empi.command.move;
+package eu.tsvetkov.empi.x_empi.command.move;
 
-import eu.tsvetkov.empi.command.CommandTest;
-import eu.tsvetkov.empi.command.move.OrganizeByArtist;
+import eu.tsvetkov.empi.x_empi.command.CommandTest;
+import eu.tsvetkov.empi.x_empi.command.move.OrganizeByArtist;
 import org.junit.Test;
 
 import java.nio.file.Path;

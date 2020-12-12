@@ -1,6 +1,6 @@
-package eu.tsvetkov.empi.command.move;
+package eu.tsvetkov.empi.x_empi.command.move;
 
-import eu.tsvetkov.empi.error.CommandException;
+import eu.tsvetkov.empi.x_empi.error.CommandException;
 
 import java.util.regex.Matcher;
 
@@ -36,7 +36,7 @@ public class Capitalize extends RenameRegex {
     protected String transformFileName(String fileName) throws CommandException {
         if (!isDirectory()) {
             int lastDotIndex = fileName.lastIndexOf(".");
-            if(fileName.lastIndexOf(".") > 0) {
+            if (fileName.lastIndexOf(".") > 0) {
                 return super.transformFileName(fileName.substring(0, lastDotIndex)) + fileName.substring(lastDotIndex);
             }
         }

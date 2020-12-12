@@ -1,10 +1,10 @@
-package eu.tsvetkov.empi.command.move;
+package eu.tsvetkov.empi.x_empi.command.move;
 
-import eu.tsvetkov.empi.command.CommandTest;
+import eu.tsvetkov.empi.x_empi.command.CommandTest;
 import eu.tsvetkov.empi.util.Util;
 import org.junit.Test;
 
-import static eu.tsvetkov.empi.command.move.Rename.*;
+import static eu.tsvetkov.empi.x_empi.command.move.Rename.*;
 
 /**
  * @author Vadim Tsvetkov (dev@tsvetkov.eu)

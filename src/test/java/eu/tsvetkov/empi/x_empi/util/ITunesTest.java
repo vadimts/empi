@@ -1,7 +1,7 @@
-package eu.tsvetkov.empi.util;
+package eu.tsvetkov.empi.x_empi.util;
 
+import eu.tsvetkov.empi.util.SLogger;
 import eu.tsvetkov.empi.x_empi.error.CommandException;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -11,7 +11,6 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
-import static eu.tsvetkov.empi.util.Util.joinLines;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -45,25 +44,6 @@ public class ITunesTest {
 //        // Update file names ofNumber test MP3s so that they get newly added to iTunes.
 //        renameTestMp3s("01s", playlistName);
 //        testMp3s = Files.walk(dirTestMp3s, 1).filter(BaseMp3File::isMp3File).collect(Collectors.toList());
-    }
-
-    @After
-    public void after() throws Exception {
-
-        // Delete newly added tracks from iTunes, if any.
-        if (!addedTrackIds.isEmpty()) {
-            log.debug("Deleting " + addedTrackIds.size() + " iTunes tracks added by the test: " + joinLines(addedTrackIds));
-            for (int addedTrackId : addedTrackIds) {
-                Script.deleteTrackFromLibrary(addedTrackId);
-            }
-        }
-//        assertEquals(totalTrackCount, getItunesTracksCount());
-//
-//        // Delete test playlist.
-//        Script.SCRIPT.exec("delete playlist \"" + playlistName + "\"");
-//
-//        // Rename test MP3s back to original file names.
-//        renameTestMp3s(playlistName, "01s");
     }
 
     @BeforeClass

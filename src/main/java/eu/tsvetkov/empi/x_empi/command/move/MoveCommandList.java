@@ -1,7 +1,7 @@
-package eu.tsvetkov.empi.command.move;
+package eu.tsvetkov.empi.x_empi.command.move;
 
-import eu.tsvetkov.empi.command.CommandList;
-import eu.tsvetkov.empi.error.CommandException;
+import eu.tsvetkov.empi.x_empi.command.CommandList;
+import eu.tsvetkov.empi.x_empi.error.CommandException;
 
 import java.nio.file.Path;
 
