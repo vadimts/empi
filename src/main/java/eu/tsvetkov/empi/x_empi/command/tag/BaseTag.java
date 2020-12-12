@@ -1,12 +1,11 @@
-package eu.tsvetkov.empi.command.tag;
+package eu.tsvetkov.empi.x_empi.command.tag;
 
-import eu.tsvetkov.empi.command.Command;
-import eu.tsvetkov.empi.error.CommandException;
-import eu.tsvetkov.empi.error.CommandNotAppliedException;
-import eu.tsvetkov.empi.mp3.BaseMp3File;
 import eu.tsvetkov.empi.mp3.Mp3File;
 import eu.tsvetkov.empi.mp3.Mp3Tag;
 import eu.tsvetkov.empi.mp3.TagMap;
+import eu.tsvetkov.empi.x_empi.command.Command;
+import eu.tsvetkov.empi.x_empi.error.CommandException;
+import eu.tsvetkov.empi.x_empi.error.CommandNotAppliedException;
 
 import java.nio.file.Path;
 import java.util.Map;
@@ -16,7 +15,7 @@ import java.util.Map;
  */
 public abstract class BaseTag extends Command<TagMap> {
 
-    protected BaseMp3File mp3;
+    protected Mp3File mp3;
 
     @Override
     public TagMap run(Path sourcePath) throws CommandException {
@@ -25,7 +24,7 @@ public abstract class BaseTag extends Command<TagMap> {
         return (dryRun ? tagMap : tag(tagMap));
     }
 
-    protected BaseMp3File getMp3File(Path sourcePath) {
+    protected Mp3File getMp3File(Path sourcePath) {
         return new Mp3File(sourcePath);
     }
 
